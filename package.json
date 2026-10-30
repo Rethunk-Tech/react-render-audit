@@ -1,6 +1,6 @@
 {
   "name": "@rethunk/react-render-audit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Playwright helpers that measure what a React page does: commits per component and why, idle activity, backend-call counts, layout breaks, and a pixel diff of two screenshot folders.",
   "license": "MIT",
   "author": "Rethunk.Tech, LLC",
