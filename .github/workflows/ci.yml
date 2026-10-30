@@ -44,5 +44,11 @@ jobs:
       - name: Install gate
         run: go install github.com/Rethunk-Tech/rethunk-gate-cli/cmd/gate@v0.6.9
 
+      # The tests launch a real headless Chromium, which the runner does not carry.
+      - name: Install Chromium
+        run: |
+          bun install --frozen-lockfile
+          bun x playwright install --with-deps --only-shell chromium
+
       - name: Gate
         run: gate --timeout 15m
