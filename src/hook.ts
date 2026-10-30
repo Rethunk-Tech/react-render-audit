@@ -2,7 +2,7 @@ export interface HookOptions {
   /** The window property the counters are read from. */
   global?: string
   /** Components whose commits alone do not count as the page changing, such as an animation's own. */
-  ignoreCommitsOf?: string[]
+  ignoreCommitsOf?: readonly string[]
   /** Periodic timers at or above this many ms run a no-op, so a poll landing in a measured window is not counted. */
   quietIntervalsFromMs?: number
 }

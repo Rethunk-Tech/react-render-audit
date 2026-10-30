@@ -14,7 +14,7 @@ import { hookScript, layoutBreaks, Meter, muiPreset, unevenSpacing } from '@reth
 
 const browser = await chromium.launch()
 const page = await browser.newPage()
-await page.addInitScript({ content: hookScript({ ignoreCommitsOf: [...muiPreset.ignoreCommitsOf] }) })
+await page.addInitScript({ content: hookScript(muiPreset) })
 await page.goto('http://localhost:5173')
 
 const meter = new Meter(page, await page.context().newCDPSession(page), {
@@ -42,7 +42,7 @@ await browser.close()
 
 ## Requirements
 
-ES modules, read by a bundler or a runtime such as Bun or Node. Peer dependencies: `@playwright/test` ^1.64.0. Developing the package takes `bun`, plus `lefthook`, `gitleaks` and `gate` on PATH if
+ES modules, read by a bundler or a runtime such as Bun or Node. Peer dependencies: `@playwright/test` ^1.64.0, `react` ^19.0.0, `react-dom` ^19.0.0 (the hook reads React 19's fibers). Developing the package takes `bun`, plus `lefthook`, `gitleaks` and `gate` on PATH if
 you want the git hooks.
 
 ```bash

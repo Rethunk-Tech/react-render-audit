@@ -159,4 +159,5 @@ test('muiPreset names the selectors the checks take as options', () => {
   expect(muiPreset.libraryNames.test('TouchRipple')).toBe(true)
   expect(muiPreset.libraryNames.test('ModCard')).toBe(false)
   expect(muiPreset.ownClassPrefix).toBe('Mui')
+  expect(hookScript(muiPreset)).toContain('["TouchRipple"]')
 })
