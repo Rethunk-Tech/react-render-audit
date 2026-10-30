@@ -1,0 +1,3 @@
+# package.json `files` ships src/ for the declaration maps; the tests in it are not part of the package.
+*.test.ts
+*.test.tsx

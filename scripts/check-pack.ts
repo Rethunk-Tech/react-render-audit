@@ -50,7 +50,7 @@ const paths = filePaths(JSON.parse(packed.stdout))
 const problems = [
   ...required.filter((path) => !paths.includes(path)).map((path) => `missing ${path}`),
   ...paths
-    .filter((path) => path.startsWith('dist/') && /\.test\./.test(path))
+    .filter((path) => /\.test\./.test(path))
     .map((path) => `test file shipped: ${path}`),
   ...paths
     .filter((path) => path.endsWith('.tsbuildinfo'))
