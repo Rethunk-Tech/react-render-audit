@@ -133,7 +133,7 @@ export function unevenSpacing(
       const out: UnevenSpace[] = []
       for (const el of document.querySelectorAll('body *')) {
         const box = el.getBoundingClientRect()
-        if (shown(box) && !el.closest(skipSelector)) {
+        if (shown(box) && !(skipSelector !== '' && el.closest(skipSelector))) {
           for (const f of [stackGaps(el), cardInset(el, box)]) {
             if (f) {
               out.push(f)

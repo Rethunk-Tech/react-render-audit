@@ -49,7 +49,11 @@ export function nestedBoxes(
       const out: NestedBox[] = []
       for (const el of document.querySelectorAll('body *')) {
         const r = el.getBoundingClientRect()
-        if (r.width === 0 || r.height === 0 || el.closest(controlSelector)) {
+        if (
+          r.width === 0 ||
+          r.height === 0 ||
+          (controlSelector !== '' && el.closest(controlSelector))
+        ) {
           continue
         }
         if (!boxed(el)) {

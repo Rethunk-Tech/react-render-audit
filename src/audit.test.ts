@@ -67,6 +67,7 @@ test('uneven spacing names a stack with gaps 8/8/24, and an even one is clean', 
 
   const even = await page(rows([8, 8, 8]))
   expect(await unevenSpacing(even)).toEqual([])
+  expect(await unevenSpacing(even, { skip: '' })).toEqual([])
   await even.close()
 })
 
@@ -78,6 +79,7 @@ test('nested boxes: a bordered box in a bordered box, unless the outer one is a 
   const nested = await page(html('card'))
   const found = await nestedBoxes(nested)
   expect(found).toHaveLength(1)
+  expect(await nestedBoxes(nested, { controls: '' })).toHaveLength(1)
   expect(found[0]?.text).toBe('inner')
   await nested.close()
 
