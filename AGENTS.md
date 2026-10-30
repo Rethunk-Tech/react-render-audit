@@ -21,8 +21,8 @@ would upload.
   `JSON.stringify`d into it, never concatenated raw.
 - The hook counts a component when React did work on it in a commit, so the counts hold for
   production builds.
-- Nothing here reads an environment variable or writes to the console; callers pass options and
-  `Meter` takes a `log` callback.
+- Nothing reads an environment variable, and only the `render-diff` command (`src/cli.ts`) writes
+  to the console; callers pass options, and `Meter` and `webkitWalk` take a `log` callback.
 - `webkitWalk` has no automated test (it needs WebKitGTK and a display); keep its logic in the
   page-side scripts and the break shaping small.
 
