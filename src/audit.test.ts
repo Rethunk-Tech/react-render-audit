@@ -117,6 +117,30 @@ test('the hook counts a click as an update of the component that started it, and
   await p.close()
 })
 
+test('backendCall picks which requests count as backend calls and names them', async () => {
+  const p = await context.newPage()
+  await p.route('http://audit.test/**', (route) =>
+    route.fulfill({ json: {}, headers: { 'access-control-allow-origin': '*' } }),
+  )
+  await p.addInitScript({ content: hookScript() })
+  await p.goto('about:blank')
+  const meter = new Meter(p, await context.newCDPSession(p), {
+    backendCall: (r) => (new URL(r.url()).pathname.startsWith('/api/') ? 'save' : null),
+  })
+  await meter.reset()
+  await p.evaluate(() =>
+    Promise.all([
+      fetch('http://audit.test/api/save', { method: 'POST' }),
+      fetch('http://audit.test/logo.png'),
+    ]),
+  )
+  await meter.untilStill(50, 3000)
+  const sample = await meter.read()
+  expect(sample.calls).toBe(1)
+  expect(sample.callsBy).toEqual([['save', 1]])
+  await p.close()
+})
+
 test('diffShots lists a changed screen, one only one side has, and writes the picture', async () => {
   const p = await context.newPage()
   const png = (color: string) =>
