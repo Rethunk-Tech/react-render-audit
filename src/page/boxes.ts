@@ -1,7 +1,6 @@
 import type { Page } from '@playwright/test'
 
-/** A boxed element (an edge or a fill with rounded corners) that sits inside another one on the screen. Dialog, menu
- * and popover papers are the surface their content sits on, not a card, so they do not count as the outer box. */
+/** A boxed element (an edge or a fill with rounded corners) that sits inside another one on the screen. */
 export interface NestedBox {
   inner: string
   outer: string

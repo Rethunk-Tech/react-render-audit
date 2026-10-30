@@ -36,7 +36,7 @@ await browser.close()
 | `perTen(sample, watchedMs)` | Scales the counts of an idle watch to per 10 s. |
 | `layoutBreaks(page)` | `collapsed`, `covered` and `overflow` together; each is an exported function that runs in the page. |
 | `unevenSpacing(page, options?)`, `nestedBoxes(page, options?)` | Selectors come from the options; with none, nothing library-specific is assumed. |
-| `muiPreset` | The MUI values for the options above, `libraryNames` for `Meter`. |
+| `muiPreset` | The MUI values for the options above: `ignoreCommitsOf` for `hookScript`, `libraryNames` for `Meter`. |
 | `diffShots(oldDir, newDir)` | Writes `<newDir>/diff/<screen>.png` for each screen that changed; reports, never judges. `render-diff OLD NEW` is the same as a command. |
 | `webkitWalk(walk)` | Returns structured breaks, or `null` when the driver or browser binary is missing. A step that finds nothing to click is a `missing` break. It needs WebKitGTK, WebKitWebDriver and a display; the caller supplies the driver's environment. |
 

@@ -23,8 +23,8 @@ anything from `src/index.ts`.
 
 ## Dependencies
 
-A new dependency needs a reason the platform cannot meet. React, React DOM and anything else the
-consumer must share one copy of are peer dependencies, never dependencies.
+A new dependency needs a reason the platform cannot meet. Anything the consumer must share one copy
+of is a peer dependency, never a dependency.
 
 ## Changelog
 

@@ -80,7 +80,7 @@ export function hookScript({
     }
   }
   // A periodic timer of quietIntervalsFromMs or more (a state poll, a minute clock) would fire inside a
-  // case's window at random and be counted as its work, so here it runs a no-op. A shorter one, a live readout a
+  // measured window at random and be counted as its work, so here it runs a no-op. A shorter one, a live readout a
   // screen shows, still runs, and the idle watch counts it.
   const realSetInterval = window.setInterval.bind(window)
   window.setInterval = (fn, ms, ...args) => (ms >= QUIET_FROM_MS ? realSetInterval(() => {}, ms) : realSetInterval(fn, ms, ...args))
@@ -89,7 +89,6 @@ export function hookScript({
     renderers: new Map(),
     inject(r) { this.renderers.set(this.renderers.size + 1, r); return this.renderers.size },
     onScheduleFiberRoot() {},
-    // A commit caused only by a component named in ignoreCommitsOf (a ripple that fades out in a commit of its own, say) is not the page settling.
     onCommitFiberRoot(_id, root) {
       st.commits++
       const now = performance.now()

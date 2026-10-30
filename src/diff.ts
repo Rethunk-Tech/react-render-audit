@@ -24,7 +24,7 @@ const PNG_SUFFIX = /\.png$/
 const stem = (file: string) => file.replace(PNG_SUFFIX, '')
 
 /** Compares two screenshot folders screen by screen and writes `<newDir>/diff/<screen>.png` for each that changed. It
- * reports and does not judge: copied data that changed between runs also moves pixels. */
+ * reports and does not judge: data that changed between runs also moves pixels. */
 export async function diffShots(oldDir: string, newDir: string): Promise<ShotDiff> {
   const before = pngs(oldDir)
   const after = pngs(newDir)

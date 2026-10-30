@@ -17,7 +17,7 @@ const DEFAULT_BROWSER = '/usr/libexec/webkit2gtk-4.1/MiniBrowser'
 export interface Step {
   role: 'tab' | 'button' | 'menuitem'
   name: string
-  // Searches only inside this container, for a name another control shares (the bell is also "Notifications").
+  /** Searches only inside this container, for a name another control shares. */
   within?: string
 }
 /** The screens in an order where each is reached from the one before by clicking, so the app loads once. `from` is what

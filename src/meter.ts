@@ -42,7 +42,7 @@ export interface Sample {
   heapMiB: number
   nodes: number
   listeners: number
-  // Wall time from the action's start to its last React commit.
+  /** Wall time from `reset` to the last React commit. */
   settledMs: number
   /** What started the cascades of that last commit. */
   lastWhy: string[]
