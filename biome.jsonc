@@ -219,6 +219,22 @@
   },
 
   "overrides": [
+    // The package drives Playwright from Node: it reads and writes files, spawns a driver, and is never bundled for a browser.
+    {
+      "includes": ["**/src/**"],
+      "linter": { "rules": { "correctness": { "noNodejsModules": "off" } } }
+    },
+    // Page-side checks run inside the browser: each is serialized by Playwright, so a regex or a number
+    // cannot live at module level, and a measuring script is not a place for named constants.
+    {
+      "includes": ["**/src/page/**"],
+      "linter": {
+        "rules": {
+          "performance": { "useTopLevelRegex": "off" },
+          "style": { "noMagicNumbers": "off" }
+        }
+      }
+    },
     // canon ts-context-library-biome-00002
     {
       "includes": ["**/src/index.ts"],
