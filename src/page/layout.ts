@@ -62,8 +62,8 @@ export function covered(): LayoutBreak[] {
     }
     return new DOMRect(left, top, right - left, bottom - top)
   }
-  // A transparent ::before or ::after stretched past its element makes a whole card one click target (the title's, on a
-  // mod card); the text under it still shows.
+  // A transparent ::before or ::after stretched past its element makes a whole card one click target (a card whose title
+  // link covers it); the text under it still shows.
   const transparent = (el: Element, pseudo: string) =>
     /rgba\(0, 0, 0, 0\)|transparent/.test(getComputedStyle(el, pseudo).backgroundColor)
   const clickArea = (el: Element, x: number, y: number) => {
