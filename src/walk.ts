@@ -42,6 +42,8 @@ export interface Walk {
   browser?: string
   port?: number
   view?: { width: number; height: number }
+  /** Hears a line as each screen is checked. */
+  log?: (line: string) => void
 }
 
 /** A layout break on a screen, or a step that found nothing to click (`where` is its role, `text` its name). */
@@ -197,6 +199,7 @@ export async function webkitWalk(w: Walk): Promise<WalkBreak[] | null> {
     await load(session, w.url)
     for (const screen of w.screens) {
       breaks.push(...(await visit(session, screen, w)))
+      w.log?.(`${screen.name} checked (WebKitGTK)`)
     }
     await call(base, 'DELETE', `/session/${session.id}`)
   } finally {
