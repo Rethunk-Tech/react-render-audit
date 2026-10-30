@@ -30,6 +30,8 @@
 
   // canon ts-biome-00024
   "javascript": {
+    // canon ts-bun-biome-00002
+    "globals": ["Bun"],
     "formatter": {
       "quoteStyle": "single",
       "semicolons": "asNeeded",
@@ -219,21 +221,15 @@
   },
 
   "overrides": [
-    // The package drives Playwright from Node: it reads and writes files, spawns a driver, and is never bundled for a browser.
+    // Node-side files: they read and write screenshots and spawn the WebKit driver, and never reach a browser bundle.
     {
-      "includes": ["**/src/**"],
+      "includes": ["src/cli.ts", "src/diff.ts", "src/walk.ts"],
       "linter": { "rules": { "correctness": { "noNodejsModules": "off" } } }
     },
-    // Page-side checks run inside the browser: each is serialized by Playwright, so a regex or a number
-    // cannot live at module level, and a measuring script is not a place for named constants.
+    // Playwright serializes covered() into the page, where module scope does not exist, so its regexes cannot be hoisted.
     {
-      "includes": ["**/src/page/**"],
-      "linter": {
-        "rules": {
-          "performance": { "useTopLevelRegex": "off" },
-          "style": { "noMagicNumbers": "off" }
-        }
-      }
+      "includes": ["src/page/layout.ts"],
+      "linter": { "rules": { "performance": { "useTopLevelRegex": "off" } } }
     },
     // canon ts-context-library-biome-00002
     {

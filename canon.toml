@@ -1,7 +1,5 @@
 reconciled = "canon v0.1.0-poc"
 
 [deviations]
-# src/page/ holds functions Playwright serializes into the page, where module scope does not exist.
-"ts-biome-00006 performance/useTopLevelRegex" = "src/page/ functions are serialized into the browser, so a regex cannot be a module constant"
-"ts-biome-00006 style/noMagicNumbers" = "src/page/ holds in-page measuring scripts with their thresholds inline"
-"ts-biome-00006 correctness/noNodejsModules" = "the package runs in Node beside Playwright and is never bundled for a browser"
+"ts-biome-00006 performance/useTopLevelRegex" = "src/page/layout.ts: covered() is serialized into the browser, so its regexes cannot be module constants"
+"ts-biome-00006 correctness/noNodejsModules" = "src/cli.ts, src/diff.ts and src/walk.ts run in Node beside Playwright and are never bundled for a browser"

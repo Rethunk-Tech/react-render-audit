@@ -41,6 +41,7 @@ export function collapsed(): LayoutBreak[] {
 
 // The first letter of each visible text: a sticky or fixed bar scrolled over it is normal, anything else on top is not.
 export function covered(): LayoutBreak[] {
+  const QuoteChars = 40
   const pinned = (el: Element | null): boolean =>
     el !== null && (/sticky|fixed/.test(getComputedStyle(el).position) || pinned(el.parentElement))
   // What every clipping ancestor leaves visible: text scrolled out of its list is clipped, not covered.
@@ -117,7 +118,7 @@ export function covered(): LayoutBreak[] {
     out.push({
       kind: 'covered',
       where: `${owner.parentElement?.tagName.toLowerCase() ?? ''}>${owner.tagName.toLowerCase()}`,
-      text: `"${(node.textContent ?? '').trim().slice(0, 40)}" under ${name}`,
+      text: `"${(node.textContent ?? '').trim().slice(0, QuoteChars)}" under ${name}`,
     })
   }
   return out

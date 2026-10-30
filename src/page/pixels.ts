@@ -27,17 +27,22 @@ export const comparePixels = async ({
   const pa = pixels(x).data
   const shown = pixels(y)
   const pb = shown.data
+  const Channels = 4
+  const Opaque = 255
+  const Alpha = 3
+  const Red = [Opaque, 0, 0, Opaque]
+  const FadedAlpha = 70
   let changed = 0
-  for (let i = 0; i < pa.length; i += 4) {
+  for (let i = 0; i < pa.length; i += Channels) {
     const moved =
       Math.abs((pa[i] ?? 0) - (pb[i] ?? 0)) > tolerance ||
       Math.abs((pa[i + 1] ?? 0) - (pb[i + 1] ?? 0)) > tolerance ||
       Math.abs((pa[i + 2] ?? 0) - (pb[i + 2] ?? 0)) > tolerance
     if (moved) {
       changed += 1
-      pb.set([255, 0, 0, 255], i)
+      pb.set(Red, i)
     } else {
-      pb[i + 3] = 70
+      pb[i + Alpha] = FadedAlpha
     }
   }
   const c = new OffscreenCanvas(w, h)

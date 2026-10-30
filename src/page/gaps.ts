@@ -24,6 +24,8 @@ export function unevenSpacing(
     ({ skipSelector, prefix }) => {
       const TolerancePx = 2
       const MaxPainted = 400
+      const MinStackRows = 3
+      const MinCardHeightPx = 40
       const clear = (c: string) => c === 'rgba(0, 0, 0, 0)' || c === 'transparent'
       const shown = (r: DOMRect) =>
         r.width > 0 &&
@@ -101,7 +103,7 @@ export function unevenSpacing(
           .map((c) => painted(c))
           .filter((r): r is DOMRect => r !== null)
         const stacked = rows.every((r, i) => i === 0 || r.top >= (rows[i - 1]?.bottom ?? 0) - 1)
-        if (rows.length < 3 || !stacked) {
+        if (rows.length < MinStackRows || !stacked) {
           return null
         }
         const gaps = rows.slice(1).map((r, i) => Math.round(r.top - (rows[i]?.bottom ?? 0)))
@@ -112,7 +114,7 @@ export function unevenSpacing(
         if (
           !paints(el) ||
           el.matches('img, svg, input, textarea, canvas, video') ||
-          box.height < 40
+          box.height < MinCardHeightPx
         ) {
           return null
         }

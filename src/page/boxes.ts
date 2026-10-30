@@ -23,6 +23,8 @@ export function nestedBoxes(
 ): Promise<NestedBox[]> {
   return page.evaluate(
     ({ surfaceSelector, controlSelector, prefix }) => {
+      const MinCardWidthPx = 120
+      const MinCardHeightPx = 28
       const clear = (c: string) => c === 'rgba(0, 0, 0, 0)' || c === 'transparent'
       const boxed = (el: Element): boolean => {
         const s = getComputedStyle(el)
@@ -33,7 +35,7 @@ export function nestedBoxes(
             !clear(s.getPropertyValue(`border-${side.toLowerCase()}-color`)),
         )
         const box = el.getBoundingClientRect()
-        const big = box.width >= 120 && box.height >= 28
+        const big = box.width >= MinCardWidthPx && box.height >= MinCardHeightPx
         return radius && big && (edge || !clear(s.backgroundColor))
       }
       const name = (el: Element) => {
