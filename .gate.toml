@@ -1,0 +1,24 @@
+# `gate` finds no checks in a TypeScript package on its own, so every check is declared here and
+# runs through a package.json script: the same command locally, in the pre-push hook and in CI.
+[gates.lint]
+run = "bun run lint"
+
+[gates.typecheck]
+run = "bun run typecheck"
+
+[gates.test]
+run = "bun run test"
+
+# Overrides the build `gate` detects from package.json: gates run concurrently, and the pack check
+# reads the `dist` the build writes.
+[gates.build]
+run = "bun run build && bun run pack:check"
+
+[gates.workflows]
+run = "./scripts/actionlint"
+
+# No-op in CI, which never uses --no-verify and already scanned every commit on
+# the way in, so a second scan there spends runner minutes to repeat it. The
+# guard is what keeps one definition serving both hooks.
+[gates.gitleaks]
+run = '[ -n "$CI" ] || gitleaks git --redact --no-banner --log-level warn'

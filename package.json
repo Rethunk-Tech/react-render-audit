@@ -1,0 +1,45 @@
+{
+  "name": "@rethunk/react-render-audit",
+  "version": "0.1.0",
+  "description": "Playwright helpers that measure what a React page does: commits per component and why, idle activity, backend-call counts, layout breaks, and a pixel diff of two screenshot folders.",
+  "license": "MIT",
+  "author": "Rethunk.Tech, LLC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rethunk-Tech/react-render-audit.git"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "packageManager": "bun@1.4.3",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "lint": "biome check --error-on-warnings .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "bun test",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "pack:check": "bun scripts/check-pack.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "@playwright/test": "^1.64.1",
+    "@types/bun": "^1.4.4",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "^7.0.2"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.64.0"
+  }
+}

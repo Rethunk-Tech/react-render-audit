@@ -1,0 +1,53 @@
+name: Release
+
+# A tag `vX.Y.Z` publishes the version in package.json to npm, with provenance, through npm trusted
+# publishing: the registry trusts this workflow's OIDC identity, so no token is stored anywhere.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Only this job can mint the OIDC token the registry exchanges for a publish.
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun
+        uses: Rethunk-Tech/gh-actions/setup-bun@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+        with:
+          node-version: "24"
+
+      - name: Tag matches package.json
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          version=$(node -p "require('./package.json').version")
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag v$tag must match package.json version $version"
+            exit 1
+          fi
+
+      - name: Build
+        run: bun run build
+
+      - name: Publish
+        run: npm publish --provenance --access public

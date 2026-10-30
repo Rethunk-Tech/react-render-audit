@@ -1,0 +1,48 @@
+name: CI
+
+# The gate on every pull request and every push to main. release.yml calls this same workflow, so a
+# tag cannot publish what the gate has not passed.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+# A newer push makes the older run's verdict worthless, so it cancels that run rather than racing it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    # The same `gate` a contributor runs. A check that exists only in this file does not run locally.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # node-version also puts npm on the runner, which the pack check runs.
+      - name: Set up Bun
+        uses: Rethunk-Tech/gh-actions/setup-bun@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+        with:
+          node-version: "24"
+
+      # `gate` is a Go program; the toolchain exists only to install it.
+      - name: Set up Go
+        uses: Rethunk-Tech/gh-actions/setup-go@67ec8bd68343d915462729ad119c355740cf6205 # v1.22
+        with:
+          go-version: 1.27.3
+
+      # Pinned rather than floating: a gate release that changes detection must not change this
+      # repository's verdict without a commit here.
+      - name: Install gate
+        run: go install github.com/Rethunk-Tech/rethunk-gate-cli/cmd/gate@v0.6.9
+
+      - name: Gate
+        run: gate --timeout 15m
