@@ -12,7 +12,7 @@ would upload.
 
 ## Shape
 
-- Relative imports keep their `.ts` extension; `tsc -p tsconfig.build.json` rewrites it to `.js` on emit.
+- Relative imports keep their `.ts` extension; `tsc -p tsconfig.json` rewrites it to `.js` on emit.
 - `package.json` `files` is `dist` and `src`: the declaration maps point at `../src`.
 - The only entry point is `src/index.ts`; a name not exported there is not API.
 - `src/page/` holds functions Playwright serializes into the page: they may not close over module

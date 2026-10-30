@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.json",
+  // Type-checks the tests and scripts the emitting program leaves out; canon governs tsconfig.json alone.
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["src", "test", "scripts"],
+  "exclude": []
+}

@@ -33,12 +33,8 @@
     // canon ts-typescript-00008
     "skipLibCheck": true,
 
-    // canon ts-typescript-00009
-    "noEmit": true,
-
     // canon ts-typescript-00010
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
 
     // canon ts-typescript-00011
     "resolveJsonModule": true,
@@ -49,14 +45,26 @@
     // canon ts-typescript-00013
     "allowJs": false,
 
-    // canon ts-typescript-00015
-    "incremental": true,
+    // canon ts-context-library-typescript-00002: a library emits its declarations, with maps,
+    // and supersedes the base's noEmit, allowImportingTsExtensions and incremental.
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "rewriteRelativeImportExtensions": true,
+    "incremental": false,
+
+    // The package's own: the declaration maps point at ../src, which the package publishes.
+    "outDir": "dist",
+    "rootDir": "src",
 
     // The package's own: canon leaves the target and the library set to the package.
     "target": "ES2023",
     "module": "ESNext",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["bun"]
+    "types": ["bun"],
+    "jsx": "react-jsx"
   },
-  "include": ["src", "test", "scripts"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
