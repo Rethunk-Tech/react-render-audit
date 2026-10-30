@@ -12,8 +12,12 @@
 
 Playwright helpers that measure what a React page does: commits per component and why, idle activity, backend-call counts, layout breaks, and a pixel diff of two screenshot folders. Package `@rethunk/react-render-audit`. First consumer: Mortar.
 
-<!-- scaffold: one short paragraph on what the package guarantees and why it exists, in plain
-words. -->
+It reads React's DevTools hook, so it counts commits by component without a dev build, and its layout checks need
+no baseline to see a bug. Selectors for a UI library are options; `muiPreset` holds the values that fit MUI.
+
+```ts
+await page.addInitScript({ content: hookScript(muiPreset) })
+```
 
 ## Quick start
 
@@ -25,7 +29,11 @@ A worked example and the contracts: [HUMANS.md](HUMANS.md).
 
 ## Features
 
-<!-- scaffold: 3 to 6 bullets, each a capability a caller can rely on. No roadmap. -->
+- `hookScript` and `Meter` report commits per component and why, mutations, long tasks and backend calls.
+- `layoutBreaks` finds a control squeezed to nothing, text covered by another element and a page wider than its window.
+- `unevenSpacing` and `nestedBoxes` find uneven gaps and a box inside a same-looking box.
+- `diffShots` and the `render-diff` command compare two screenshot folders pixel by pixel.
+- `webkitWalk` repeats the layout checks in WebKitGTK through WebKitWebDriver.
 
 ## Documentation
 

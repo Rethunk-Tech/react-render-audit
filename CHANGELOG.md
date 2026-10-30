@@ -6,4 +6,12 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `hookScript` and `Meter`: React commits per component and why, backend calls and idle activity.
+- `layoutBreaks`, `unevenSpacing`, `nestedBoxes`: layout checks that need no baseline.
+- `diffShots` and the `render-diff` command: pixel diff of two screenshot folders.
+- `webkitWalk`: the layout checks in WebKitGTK.
+- `muiPreset`: selectors and names for MUI apps.
+
 [Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/commits/main

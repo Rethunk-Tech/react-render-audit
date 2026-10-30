@@ -1,2 +1,8 @@
-// Playwright helpers that measure what a React page does: commits per component and why, idle activity, backend-call counts, layout breaks, and a pixel diff of two screenshot folders.
-export {}
+export { diffShots, type ShotDiff } from './diff.ts'
+export { DEFAULT_GLOBAL, type HookOptions, hookScript } from './hook.ts'
+export { Meter, type MeterOptions, perTen, type Sample } from './meter.ts'
+export { type BoxOptions, type NestedBox, nestedBoxes } from './page/boxes.ts'
+export { type GapOptions, type UnevenSpace, unevenSpacing } from './page/gaps.ts'
+export { collapsed, covered, type LayoutBreak, layoutBreaks, overflow } from './page/layout.ts'
+export { muiPreset } from './preset.ts'
+export { type Screen, type Step, type Walk, type WalkBreak, webkitWalk } from './walk.ts'

@@ -14,10 +14,10 @@ Please do not open a public issue for a suspected vulnerability first.
 
 ## What is in scope
 
-<!-- scaffold: the untrusted inputs this package handles, and each property a crafted input must not
-break (an escape, an unbounded allocation, a panic). One bullet each, naming the API. -->
+- `diffShots` reads PNG files from two folders and decodes them in a headless browser. A crafted
+  image must not run code or write outside `<newDir>/diff`.
 
 ## What is out of scope
 
-<!-- scaffold: what the caller is trusted to have checked already, and behaviour that is intended
-rather than a vulnerability. -->
+- The page under test: its scripts run in the browser Playwright drives, as they would anyway.
+- The environment and binary paths handed to `webkitWalk`.
