@@ -6,6 +6,11 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `webkitWalk` starts WebKitWebDriver on a free port unless given one, and stops it and its browser when the process
+  is interrupted, so a later walk is never refused a session by a driver an earlier one left running
+
 ## [0.1.1] - 2026-10-30
 
 ### Changed

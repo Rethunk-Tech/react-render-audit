@@ -1,11 +1,12 @@
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
+import { createServer } from 'node:net'
 import { join } from 'node:path'
+import process from 'node:process'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { collapsed, covered, type LayoutBreak, overflow } from './page/layout.ts'
 
-const DEFAULT_PORT = 4471
 const SETTLE_MS = 3000
 const HALF_SETTLE_MS = SETTLE_MS / 2
 const DRIVER_START_MS = 800
@@ -40,6 +41,7 @@ export interface Walk {
   driver?: string
   /** MiniBrowser's path. */
   browser?: string
+  /** WebKitWebDriver's port; a free one when unset. */
   port?: number
   view?: { width: number; height: number }
   /** Hears a line as each screen is checked. */
@@ -179,9 +181,17 @@ export async function webkitWalk(w: Walk): Promise<WalkBreak[] | null> {
   if (w.shots) {
     await mkdir(join(w.shots, 'loading'), { recursive: true })
   }
-  const port = w.port ?? DEFAULT_PORT
+  const port = w.port ?? (await freePort())
   const base = `http://127.0.0.1:${port}`
   const driver = spawn(driverBin, [`--port=${port}`], { env: w.env, stdio: 'ignore' })
+  // A walk interrupted by a signal would leave the driver and its browser running; they go first, then the signal
+  // ends the process as it would have.
+  const stop = (signal: NodeJS.Signals) => {
+    driver.kill()
+    process.kill(process.pid, signal)
+  }
+  process.once('SIGINT', stop)
+  process.once('SIGTERM', stop)
   const breaks: WalkBreak[] = []
   try {
     await sleep(DRIVER_START_MS)
@@ -203,7 +213,22 @@ export async function webkitWalk(w: Walk): Promise<WalkBreak[] | null> {
     }
     await call(base, 'DELETE', `/session/${session.id}`)
   } finally {
+    process.off('SIGINT', stop)
+    process.off('SIGTERM', stop)
     driver.kill()
   }
   return breaks
+}
+
+// A port the system has free, so a driver another walk left behind never takes this one's sessions.
+function freePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = createServer()
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', () => {
+      const address = server.address()
+      const port = typeof address === 'object' && address ? address.port : 0
+      server.close(() => resolve(port))
+    })
+  })
 }
