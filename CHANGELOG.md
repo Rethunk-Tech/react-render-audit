@@ -6,6 +6,8 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-01
+
 ### Fixed
 
 - `webkitWalk` starts WebKitWebDriver on a free port unless given one, and stops it and its browser when the process
@@ -27,6 +29,7 @@ Notable changes to `react-render-audit`. The format follows
 - `webkitWalk`: the layout checks in WebKitGTK.
 - `muiPreset`: selectors and names for MUI apps.
 
-[Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Rethunk-Tech/react-render-audit/releases/tag/v0.1.1
 [0.1.0]: https://www.npmjs.com/package/@rethunk/react-render-audit/v/0.1.0
