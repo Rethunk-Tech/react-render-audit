@@ -22,7 +22,7 @@ export function collapsed(): LayoutBreak[] {
   const tallPx = 16
   const out: LayoutBreak[] = []
   const layers = [...document.querySelectorAll('[role="dialog"], [role="menu"], [role="listbox"]')]
-  const top = layers.filter((el) => el.getBoundingClientRect().width > 0).at(-1) ?? document.body
+  const top = layers.findLast((el) => el.getBoundingClientRect().width > 0) ?? document.body
   for (const el of top.querySelectorAll('img, [role="img"], button, [role="button"], a[href]')) {
     const r = el.getBoundingClientRect()
     const inView = r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth
@@ -86,7 +86,7 @@ export function covered(): LayoutBreak[] {
     return r.width > 0 && inside ? r : null
   }
   const layers = [...document.querySelectorAll('[role="dialog"], [role="menu"], [role="listbox"]')]
-  const top = layers.filter((el) => el.getBoundingClientRect().width > 0).at(-1) ?? document.body
+  const top = layers.findLast((el) => el.getBoundingClientRect().width > 0) ?? document.body
   const out: LayoutBreak[] = []
   const walker = document.createTreeWalker(top, NodeFilter.SHOW_TEXT)
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
