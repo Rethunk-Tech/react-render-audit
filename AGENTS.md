@@ -28,12 +28,12 @@ would upload.
 
 ## Files
 
-| File | Holds |
-| --- | --- |
-| `src/index.ts` | The public surface |
-| `src/hook.ts` | The DevTools hook script |
-| `src/meter.ts` | `Meter`, `Sample`, `perTen` |
-| `src/preset.ts` | `muiPreset` |
-| `src/diff.ts`, `src/cli.ts` | Screenshot folder diff and its command |
-| `src/walk.ts` | WebKitGTK walk through WebKitWebDriver |
-| `src/page/layout.ts`, `gaps.ts`, `boxes.ts`, `pixels.ts` | Page-side checks and pixel compare |
+| File                                                     | Holds                                  |
+| -------------------------------------------------------- | -------------------------------------- |
+| `src/index.ts`                                           | The public surface                     |
+| `src/hook.ts`                                            | The DevTools hook script               |
+| `src/meter.ts`                                           | `Meter`, `Sample`, `perTen`            |
+| `src/preset.ts`                                          | `muiPreset`                            |
+| `src/diff.ts`, `src/cli.ts`                              | Screenshot folder diff and its command |
+| `src/walk.ts`                                            | WebKitGTK walk through WebKitWebDriver |
+| `src/page/layout.ts`, `gaps.ts`, `boxes.ts`, `pixels.ts` | Page-side checks and pixel compare     |

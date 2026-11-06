@@ -37,13 +37,13 @@ A worked example and the contracts: [HUMANS.md](HUMANS.md).
 
 ## Documentation
 
-| Doc | Audience |
-| --- | --- |
-| [HUMANS.md](HUMANS.md) | Running and using the package |
-| [AGENTS.md](AGENTS.md) | Internals, invariants, and why |
+| Doc                                | Audience                       |
+| ---------------------------------- | ------------------------------ |
+| [HUMANS.md](HUMANS.md)             | Running and using the package  |
+| [AGENTS.md](AGENTS.md)             | Internals, invariants, and why |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Process — commits, tests, docs |
-| [SECURITY.md](SECURITY.md) | Vulnerability disclosure |
-| [CHANGELOG.md](CHANGELOG.md) | Release notes |
+| [SECURITY.md](SECURITY.md)         | Vulnerability disclosure       |
+| [CHANGELOG.md](CHANGELOG.md)       | Release notes                  |
 
 ## License
 
