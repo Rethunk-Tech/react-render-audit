@@ -14,8 +14,10 @@ run = "bun run test"
 [gates.build]
 run = "bun run build && bun run pack:check"
 
+# No-op in CI, like gitleaks: the pre-push hook already ran this gate on every pushed commit, and a runner's
+# download of the pinned binary fails the whole run whenever GitHub release downloads answer 504.
 [gates.workflows]
-run = "./scripts/actionlint"
+run = '[ -n "$CI" ] || ./scripts/actionlint'
 
 # No-op in CI, which never uses --no-verify and already scanned every commit on
 # the way in, so a second scan there spends runner minutes to repeat it. The
