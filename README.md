@@ -36,6 +36,7 @@ A worked example and the contracts: [HUMANS.md](HUMANS.md).
 - `unevenSpacing` and `nestedBoxes` find uneven gaps and a box inside a same-looking box.
 - `diffShots` and the `render-diff` command compare two screenshot folders pixel by pixel.
 - `webkitWalk` repeats the layout checks in WebKitGTK through WebKitWebDriver.
+- `@rethunk/react-render-audit/proc` reads a process tree's memory and CPU from Linux `/proc`, for budget scripts.
 
 ## Documentation
 

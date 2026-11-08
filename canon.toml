@@ -2,4 +2,4 @@ reconciled = "canon v0.1.0-poc"
 
 [deviations]
 "ts-biome-00006 performance/useTopLevelRegex" = "src/page/layout.ts: covered() is serialized into the browser, so its regexes cannot be module constants"
-"ts-biome-00006 correctness/noNodejsModules" = "src/cli.ts, src/diff.ts and src/walk.ts run in Node beside Playwright and are never bundled for a browser"
+"ts-biome-00006 correctness/noNodejsModules" = "src/cli.ts, src/diff.ts, src/proc.ts and src/walk.ts run in Node beside Playwright and are never bundled for a browser"

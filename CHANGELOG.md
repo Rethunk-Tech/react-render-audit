@@ -6,6 +6,11 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `@rethunk/react-render-audit/proc`: memory and CPU of a process tree from Linux `/proc` — `tree`, `pssKiB`,
+  `cpuSeconds`, `mappings`, `byRole`, `browserRoot`, `exeOf` and `roleOf` — for budget scripts. Linux only.
+
 ## [0.1.3] - 2026-11-07
 
 ### Fixed

@@ -15,6 +15,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./proc": {
+      "types": "./dist/proc.d.ts",
+      "default": "./dist/proc.js"
     }
   },
   "bin": {

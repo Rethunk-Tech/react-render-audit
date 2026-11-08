@@ -223,7 +223,7 @@
   "overrides": [
     // Node-side files: they read and write screenshots and spawn the WebKit driver, and never reach a browser bundle.
     {
-      "includes": ["src/cli.ts", "src/diff.ts", "src/walk.ts"],
+      "includes": ["src/cli.ts", "src/diff.ts", "src/proc.ts", "src/walk.ts"],
       "linter": { "rules": { "correctness": { "noNodejsModules": "off" } } }
     },
     // Playwright serializes covered() into the page, where module scope does not exist, so its regexes cannot be hoisted.
