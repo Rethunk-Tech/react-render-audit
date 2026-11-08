@@ -6,6 +6,17 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-07
+
+### Fixed
+
+- `layoutBreaks` checked only a hidden menu when a page kept a closed menu or dialog mounted, so the rest of the page
+  went unchecked; it now takes only a shown layer as the one on top
+
+### Changed
+
+- Text under a positioned `<aside>` (a side panel laid over a list on purpose) is no longer reported as covered
+
 ## [0.1.2] - 2026-11-01
 
 ### Fixed
@@ -29,7 +40,8 @@ Notable changes to `react-render-audit`. The format follows
 - `webkitWalk`: the layout checks in WebKitGTK.
 - `muiPreset`: selectors and names for MUI apps.
 
-[Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Rethunk-Tech/react-render-audit/releases/tag/v0.1.1
 [0.1.0]: https://www.npmjs.com/package/@rethunk/react-render-audit/v/0.1.0
