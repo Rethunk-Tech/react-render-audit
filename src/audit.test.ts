@@ -46,6 +46,24 @@ test('layout breaks: a collapsed image, a covered label, a page wider than its w
   await p.close()
 })
 
+test('covered: a closed menu kept mounted still lets the page be checked, and an aside laid over a list hides it by design', async () => {
+  const p = await page(`
+    <body style="margin:0">
+      <div role="presentation" style="visibility:hidden"><ul role="menu" style="width:100px"><li>Closed item</li></ul></div>
+      <div style="position:relative;margin:20px;width:200px;height:30px">
+        <span>Hidden label</span>
+        <div style="position:absolute;inset:0;background:#000"></div>
+      </div>
+      <div style="position:relative;width:400px">
+        <p>Row under the panel</p>
+        <aside style="position:absolute;top:0;right:0;width:300px;height:100%;background:#fff">Panel</aside>
+      </div>
+    </body>`)
+  const texts = (await layoutBreaks(p)).filter((b) => b.kind === 'covered').map((b) => b.text)
+  expect(texts).toEqual(['"Hidden label" under div'])
+  await p.close()
+})
+
 test('layout breaks: a sane page has none', async () => {
   const p = await page('<body><button style="width:80px;height:30px">ok</button><p>text</p></body>')
   expect(await layoutBreaks(p)).toEqual([])

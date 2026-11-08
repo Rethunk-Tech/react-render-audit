@@ -31,6 +31,8 @@ A worked example and the contracts: [HUMANS.md](HUMANS.md).
 
 - `hookScript` and `Meter` report commits per component and why, mutations, long tasks and backend calls.
 - `layoutBreaks` finds a control squeezed to nothing, text covered by another element and a page wider than its window.
+  A positioned `<aside>` laid over content is taken as a side panel meant to cover it, and a menu or dialog kept
+  mounted while hidden is not taken as the open layer.
 - `unevenSpacing` and `nestedBoxes` find uneven gaps and a box inside a same-looking box.
 - `diffShots` and the `render-diff` command compare two screenshot folders pixel by pixel.
 - `webkitWalk` repeats the layout checks in WebKitGTK through WebKitWebDriver.

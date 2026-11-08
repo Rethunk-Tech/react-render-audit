@@ -22,7 +22,11 @@ export function collapsed(): LayoutBreak[] {
   const tallPx = 16
   const out: LayoutBreak[] = []
   const layers = [...document.querySelectorAll('[role="dialog"], [role="menu"], [role="listbox"]')]
-  const top = layers.findLast((el) => el.getBoundingClientRect().width > 0) ?? document.body
+  // A menu kept mounted while closed is hidden, not gone: only a shown layer is the one on top.
+  const top =
+    layers.findLast(
+      (el) => el.getBoundingClientRect().width > 0 && getComputedStyle(el).visibility !== 'hidden',
+    ) ?? document.body
   for (const el of top.querySelectorAll('img, [role="img"], button, [role="button"], a[href]')) {
     const r = el.getBoundingClientRect()
     const inView = r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth
@@ -86,7 +90,16 @@ export function covered(): LayoutBreak[] {
     return r.width > 0 && inside ? r : null
   }
   const layers = [...document.querySelectorAll('[role="dialog"], [role="menu"], [role="listbox"]')]
-  const top = layers.findLast((el) => el.getBoundingClientRect().width > 0) ?? document.body
+  // A menu kept mounted while closed is hidden, not gone: only a shown layer is the one on top.
+  const top =
+    layers.findLast(
+      (el) => el.getBoundingClientRect().width > 0 && getComputedStyle(el).visibility !== 'hidden',
+    ) ?? document.body
+  // A side panel laid over a list on purpose (a positioned aside) hides what is under it by design.
+  const overPanel = (hit: Element) => {
+    const panel = hit.closest('aside')
+    return panel !== null && /absolute|fixed/.test(getComputedStyle(panel).position)
+  }
   const out: LayoutBreak[] = []
   const walker = document.createTreeWalker(top, NodeFilter.SHOW_TEXT)
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -110,6 +123,7 @@ export function covered(): LayoutBreak[] {
       (pinned(hit) && !pinned(owner)) ||
       // Notifications float over whatever is under them for a few seconds, a sticky panel included.
       hit.closest('[aria-live]') !== null ||
+      overPanel(hit) ||
       clickArea(hit, x, y)
     ) {
       continue
