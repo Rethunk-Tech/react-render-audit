@@ -121,9 +121,24 @@ async function load(session: Session, url: string) {
   await still(session, SETTLE_MS)
 }
 
+const PNG_SIGNATURE = Buffer.from('89504e470d0a1a0a', 'hex')
+const MAX_SHOT_BYTES = 33_554_432
+
+/** The driver's answer as screenshot bytes, and only a PNG within the cap: whatever answers on the driver's port
+ * would otherwise choose what lands on disk under a name this walk owns. */
+export function shotBytes(answer: unknown): Buffer {
+  const bytes = Buffer.from(String(answer), 'base64')
+  if (bytes.length > MAX_SHOT_BYTES) {
+    throw new Error(`screenshot answer is over ${MAX_SHOT_BYTES} bytes`)
+  }
+  if (!bytes.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) {
+    throw new Error('screenshot answer is not a PNG')
+  }
+  return bytes
+}
+
 async function shoot({ base, id }: Session, file: string) {
-  const png = await call(base, 'GET', `/session/${id}/screenshot`)
-  await writeFile(file, Buffer.from(String(png), 'base64'))
+  await writeFile(file, shotBytes(await call(base, 'GET', `/session/${id}/screenshot`)))
 }
 
 // Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks. The

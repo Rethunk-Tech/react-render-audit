@@ -6,6 +6,11 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- `webkitWalk` writes a screenshot only when the driver's answer is PNG bytes within a size cap, so whatever answers on
+  the driver's port cannot choose what lands under a shot's name
+
 ## [0.2.0] - 2026-11-08
 
 ### Added
