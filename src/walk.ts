@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:net'
-import { basename, isAbsolute, join, relative, resolve } from 'node:path'
+import { basename, isAbsolute, join, relative, resolve as resolvePath } from 'node:path'
 import process from 'node:process'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { collapsed, covered, type LayoutBreak, overflow } from './page/layout.ts'
@@ -143,8 +143,8 @@ export function shotFile(dir: string, name: string): string {
   if (name === '' || name === '.' || name === '..' || name !== basename(name)) {
     throw new Error('screenshot name is not a file name')
   }
-  const root = resolve(dir)
-  const dest = resolve(root, `${name}.png`)
+  const root = resolvePath(dir)
+  const dest = resolvePath(root, `${name}.png`)
   const rel = relative(root, dest)
   if (rel.startsWith('..') || isAbsolute(rel)) {
     throw new Error('screenshot path leaves the shots directory')
