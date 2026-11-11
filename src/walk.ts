@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:net'
-import { join } from 'node:path'
+import { basename, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { collapsed, covered, type LayoutBreak, overflow } from './page/layout.ts'
@@ -137,8 +137,26 @@ export function shotBytes(answer: unknown): Buffer {
   return bytes
 }
 
-async function shoot({ base, id }: Session, file: string) {
-  await writeFile(file, shotBytes(await call(base, 'GET', `/session/${id}/screenshot`)))
+/** A PNG path under dir named for that screen: a slash or `..` would otherwise let the driver's bytes land outside
+ * the shots folder. */
+export function shotFile(dir: string, name: string): string {
+  if (name === '' || name === '.' || name === '..' || name !== basename(name)) {
+    throw new Error('screenshot name is not a file name')
+  }
+  const root = resolve(dir)
+  const dest = resolve(root, `${name}.png`)
+  const rel = relative(root, dest)
+  if (rel.startsWith('..') || isAbsolute(rel)) {
+    throw new Error('screenshot path leaves the shots directory')
+  }
+  return dest
+}
+
+async function shoot({ base, id }: Session, dir: string, name: string) {
+  await writeFile(
+    shotFile(dir, name),
+    shotBytes(await call(base, 'GET', `/session/${id}/screenshot`)),
+  )
 }
 
 // Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks. The
@@ -149,7 +167,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
   for (const s of screen.steps) {
     reached = reached && (await click(session, s))
     if (w.shots && s === screen.steps.at(-1)) {
-      await shoot(session, join(w.shots, 'loading', `${screen.name}.png`))
+      await shoot(session, join(w.shots, 'loading'), screen.name)
     }
     await still(session, HALF_SETTLE_MS)
   }
@@ -163,7 +181,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
         breaks.push({ screen: screen.name, kind: 'missing', where: s.role, text: s.name })
       }
       if (w.shots && s === screen.steps.at(-1)) {
-        await shoot(session, join(w.shots, 'loading', `${screen.name}.png`))
+        await shoot(session, join(w.shots, 'loading'), screen.name)
       }
       await still(session, HALF_SETTLE_MS)
     }
@@ -179,7 +197,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
     }
   }
   if (w.shots) {
-    await shoot(session, join(w.shots, `${screen.name}.png`))
+    await shoot(session, w.shots, screen.name)
   }
   return breaks
 }
