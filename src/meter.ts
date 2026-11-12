@@ -230,6 +230,9 @@ const TEN_S_MS = 10_000
 
 /** Idle figures per 10 s, whatever the watch length. */
 export function perTen(s: Sample, watchedMs: number): Sample {
+  if (watchedMs <= 0) {
+    throw new RangeError('watchedMs must be > 0')
+  }
   const k = TEN_S_MS / watchedMs
   const scale = (n: number) => Math.round(n * k)
   return {
