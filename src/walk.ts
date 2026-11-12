@@ -13,6 +13,8 @@ const DRIVER_START_MS = 800
 const DEFAULT_VIEW = { width: 1400, height: 840 }
 const DEFAULT_DRIVER = '/usr/bin/WebKitWebDriver'
 const DEFAULT_BROWSER = '/usr/libexec/webkit2gtk-4.1/MiniBrowser'
+const SESSION_CREATE_MS = 5_000
+const CALL_MS = 30_000
 
 /** A step clicks the element of that role whose accessible name matches, in the page. */
 export interface Step {
@@ -57,12 +59,42 @@ export type WalkBreak = { screen: string } & (
 type Json = Record<string, unknown>
 const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null
 
-async function call(base: string, method: string, path: string, body?: Json): Promise<unknown> {
-  const res = await fetch(base + path, {
-    method,
-    headers: { 'content-type': 'application/json' },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
+/** Literal accessible-name match: trimmed label equals name. Empty names are rejected. */
+export function nameMatches(label: string, name: string): boolean {
+  if (name.trim() === '') {
+    throw new Error('step name is empty')
+  }
+  return label.trim() === name
+}
+
+/** Whether `step` is already in `list` by role, name, and within. */
+export function hasStep(list: Step[], step: Step): boolean {
+  return list.some((s) => s.role === step.role && s.name === step.name && s.within === step.within)
+}
+
+export async function call(
+  base: string,
+  method: string,
+  path: string,
+  body?: Json,
+  timeoutMs?: number,
+): Promise<unknown> {
+  const ms = timeoutMs ?? (method === 'POST' && path === '/session' ? SESSION_CREATE_MS : CALL_MS)
+  let res: Response
+  try {
+    res = await fetch(base + path, {
+      method,
+      headers: { 'content-type': 'application/json' },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+      signal: AbortSignal.timeout(ms),
+    })
+  } catch (e) {
+    const timedOut = e instanceof Error && (e.name === 'TimeoutError' || e.name === 'AbortError')
+    if (timedOut) {
+      throw new Error(`${method} ${path}: timed out after ${ms}ms`)
+    }
+    throw e
+  }
   const json: unknown = await res.json()
   if (!(res.ok && isJson(json))) {
     throw new Error(`${method} ${path}: ${JSON.stringify(json).slice(0, ERROR_PREVIEW_CHARS)}`)
@@ -73,11 +105,10 @@ async function call(base: string, method: string, path: string, body?: Json): Pr
 // The page-side click: the first element of the role whose aria-label or text matches, waiting up to a few seconds.
 const CLICK = `
   const [role, pattern, within, done] = arguments
-  const re = new RegExp(pattern)
   const sel = { tab: '[role=tab]', button: 'button,[role=button]', menuitem: '[role=menuitem]' }[role]
   const start = Date.now()
   const tryClick = () => {
-    const el = [...(within ? document.querySelector(within) ?? document : document).querySelectorAll(sel)].find((e) => re.test((e.getAttribute('aria-label') ?? e.textContent ?? '').trim()))
+    const el = [...(within ? document.querySelector(within) ?? document : document).querySelectorAll(sel)].find((e) => (e.getAttribute('aria-label') ?? e.textContent ?? '').trim() === pattern)
     if (el) { el.click(); done(true) } else if (Date.now() - start > 8000) { done(false) } else { setTimeout(tryClick, 200) }
   }
   tryClick()
@@ -105,13 +136,17 @@ interface Session {
   id: string
 }
 
-const click = async ({ base, id }: Session, s: Step) =>
-  Boolean(
+const click = async ({ base, id }: Session, s: Step) => {
+  if (s.name.trim() === '') {
+    throw new Error('step name is empty')
+  }
+  return Boolean(
     await call(base, 'POST', `/session/${id}/execute/async`, {
       script: CLICK,
       args: [s.role, s.name, s.within ?? ''],
     }),
   )
+}
 
 const still = ({ base, id }: Session, maxMs: number) =>
   call(base, 'POST', `/session/${id}/execute/async`, { script: STILL, args: [QUIET_MS, maxMs] })
@@ -123,11 +158,16 @@ async function load(session: Session, url: string) {
 
 const PNG_SIGNATURE = Buffer.from('89504e470d0a1a0a', 'hex')
 const MAX_SHOT_BYTES = 33_554_432
+const MAX_SHOT_B64 = Math.ceil((MAX_SHOT_BYTES * 4) / 3) + 4
 
 /** The driver's answer as screenshot bytes, and only a PNG within the cap: whatever answers on the driver's port
  * would otherwise choose what lands on disk under a name this walk owns. */
 export function shotBytes(answer: unknown): Buffer {
-  const bytes = Buffer.from(String(answer), 'base64')
+  const encoded = String(answer)
+  if (encoded.length > MAX_SHOT_B64) {
+    throw new Error(`screenshot answer is over ${MAX_SHOT_BYTES} bytes`)
+  }
+  const bytes = Buffer.from(encoded, 'base64')
   if (bytes.length > MAX_SHOT_BYTES) {
     throw new Error(`screenshot answer is over ${MAX_SHOT_BYTES} bytes`)
   }
@@ -175,7 +215,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
     await load(session, w.url)
     for (const s of [
       ...(screen.from ?? []),
-      ...screen.steps.filter((x) => !(screen.from ?? []).includes(x)),
+      ...screen.steps.filter((x) => !hasStep(screen.from ?? [], x)),
     ]) {
       if (!(await click(session, s))) {
         breaks.push({ screen: screen.name, kind: 'missing', where: s.role, text: s.name })

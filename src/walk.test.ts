@@ -1,6 +1,45 @@
 import { describe, expect, test } from 'bun:test'
+import { createServer } from 'node:http'
 import { resolve } from 'node:path'
-import { shotBytes, shotFile } from './walk.ts'
+import { call, hasStep, nameMatches, shotBytes, shotFile } from './walk.ts'
+
+test('nameMatches is literal', () => {
+  expect(nameMatches('Items (3)', 'Items (3)')).toBe(true)
+  expect(nameMatches('Items 3', 'Items (3)')).toBe(false)
+  expect(nameMatches('Items (3)', '(')).toBe(false)
+  expect(() => nameMatches('x', '')).toThrow()
+  expect(() => nameMatches('x', '  ')).toThrow()
+})
+
+test('hasStep matches role, name, and within', () => {
+  const settings = { role: 'tab' as const, name: 'Settings' }
+  const from = [{ role: 'tab' as const, name: 'Settings' }]
+  expect(hasStep(from, settings)).toBe(true)
+  expect(hasStep(from, { role: 'button', name: 'Open' })).toBe(false)
+  const steps = [settings, { role: 'button' as const, name: 'Open' }]
+  expect(steps.filter((x) => !hasStep(from, x))).toEqual([{ role: 'button', name: 'Open' }])
+})
+
+test('call rejects when the driver never answers', async () => {
+  const server = createServer(() => undefined)
+  await new Promise<void>((resolve) => {
+    server.listen(0, '127.0.0.1', resolve)
+  })
+  const addr = server.address()
+  const port = typeof addr === 'object' && addr ? addr.port : 0
+  try {
+    await expect(call(`http://127.0.0.1:${port}`, 'GET', '/hang', undefined, 50)).rejects.toThrow(
+      /timed out after 50ms/,
+    )
+  } finally {
+    server.close()
+  }
+})
+
+test('shotBytes rejects over-cap encoding', () => {
+  const cap = Math.ceil((33_554_432 * 4) / 3) + 4
+  expect(() => shotBytes('a'.repeat(cap + 1))).toThrow(/over/)
+})
 
 const png = Buffer.concat([
   Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
