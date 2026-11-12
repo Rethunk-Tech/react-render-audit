@@ -14,7 +14,7 @@ test('hookScript does not throw on arbitrary options', () => {
         { requiredKeys: [] },
       ),
       (opts) => {
-        hookScript(opts)
+        expect(() => hookScript(opts)).not.toThrow()
       },
     ),
   )
