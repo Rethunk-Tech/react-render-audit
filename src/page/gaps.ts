@@ -16,7 +16,6 @@ export interface GapOptions {
   ownClassPrefix?: string
 }
 
-// biome-ignore lint/complexity/noExcessiveLinesPerFunction: page-side script cannot close over helpers
 export function unevenSpacing(
   page: Page,
   { skip = 'svg', ownClassPrefix = '' }: GapOptions = {},
@@ -138,11 +137,7 @@ export function unevenSpacing(
       for (const el of document.querySelectorAll('body *')) {
         const box = el.getBoundingClientRect()
         if (shown(box) && !(skipSelector !== '' && el.closest(skipSelector))) {
-          for (const f of [stackGaps(el), cardInset(el, box)]) {
-            if (f) {
-              out.push(f)
-            }
-          }
+          out.push(...[stackGaps(el), cardInset(el, box)].filter((f) => f !== null))
         }
       }
       return out
