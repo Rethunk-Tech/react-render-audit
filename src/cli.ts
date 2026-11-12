@@ -18,6 +18,9 @@ const result = await diffShots(oldDir, newDir)
 for (const r of result.changed) {
   console.log(`${(r.changed * PERCENT).toFixed(2).padStart(PAD)}%  ${r.name}`)
 }
+if (result.failed.length) {
+  console.log(`failed: ${result.failed.join(', ')}`)
+}
 for (const name of result.gone) {
   console.log(` gone    ${name}`)
 }

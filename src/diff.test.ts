@@ -65,6 +65,25 @@ test('diffShots reports only pixels past channel tolerance', async () => {
     expect(result.compared).toBe(4)
     expect(result.gone).toEqual([])
     expect(result.added).toEqual([])
+    expect(result.failed).toEqual([])
+  } finally {
+    rmSync(oldDir, { recursive: true, force: true })
+    rmSync(newDir, { recursive: true, force: true })
+  }
+})
+
+test('diffShots records a corrupt screenshot and still reports a real change', async () => {
+  const oldDir = mkdtempSync('diff-old-')
+  const newDir = mkdtempSync('diff-new-')
+  const truncated = solid(10, 10, 0).subarray(0, 20)
+  writeFileSync(join(oldDir, 'home.png'), truncated)
+  writeFileSync(join(newDir, 'home.png'), truncated)
+  writeFileSync(join(oldDir, 'about.png'), solid(10, 10, 0))
+  writeFileSync(join(newDir, 'about.png'), solid(10, 10, 255))
+  try {
+    const result = await diffShots(oldDir, newDir)
+    expect(result.failed).toContain('home')
+    expect(result.changed.some((row) => row.name === 'about')).toBe(true)
   } finally {
     rmSync(oldDir, { recursive: true, force: true })
     rmSync(newDir, { recursive: true, force: true })

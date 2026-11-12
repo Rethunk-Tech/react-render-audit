@@ -13,6 +13,8 @@ export interface ShotDiff {
   gone: string[]
   /** Screens only the new folder has. */
   added: string[]
+  /** Screens both folders have that could not be compared (a file that is not a readable PNG). */
+  failed: string[]
   /** How many screens both folders have. */
   compared: number
   /** Where the pictures of the changes are: the changed pixels in red over a faded copy of the new screen. */
@@ -36,17 +38,22 @@ export async function diffShots(oldDir: string, newDir: string): Promise<ShotDif
   try {
     const page = await browser.newPage()
     const rows: ShotDiff['changed'] = []
+    const failed: string[] = []
     for (const file of both) {
-      const dataUrl = (dir: string) =>
-        `data:image/png;base64,${readFileSync(join(dir, file)).toString('base64')}`
-      const result = await page.evaluate(comparePixels, {
-        a: dataUrl(oldDir),
-        b: dataUrl(newDir),
-        tolerance: CHANNEL_TOLERANCE,
-      })
-      if (result.changed > 0) {
-        writeFileSync(join(out, file), Buffer.from(result.png, 'base64'))
-        rows.push({ name: stem(file), changed: result.changed })
+      try {
+        const dataUrl = (dir: string) =>
+          `data:image/png;base64,${readFileSync(join(dir, file)).toString('base64')}`
+        const result = await page.evaluate(comparePixels, {
+          a: dataUrl(oldDir),
+          b: dataUrl(newDir),
+          tolerance: CHANNEL_TOLERANCE,
+        })
+        if (result.changed > 0) {
+          writeFileSync(join(out, file), Buffer.from(result.png, 'base64'))
+          rows.push({ name: stem(file), changed: result.changed })
+        }
+      } catch {
+        failed.push(stem(file))
       }
     }
     rows.sort((a, b) => b.changed - a.changed)
@@ -54,6 +61,7 @@ export async function diffShots(oldDir: string, newDir: string): Promise<ShotDif
       changed: rows,
       gone: [...before].filter((name) => !after.has(name)).map(stem),
       added: [...after].filter((name) => !before.has(name)).map(stem),
+      failed,
       compared: both.length,
       out,
     }
