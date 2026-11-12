@@ -13,7 +13,7 @@ const DRIVER_START_MS = 800
 const DEFAULT_VIEW = { width: 1400, height: 840 }
 const DEFAULT_DRIVER = '/usr/bin/WebKitWebDriver'
 const DEFAULT_BROWSER = '/usr/libexec/webkit2gtk-4.1/MiniBrowser'
-const SESSION_CREATE_MS = 5_000
+const SESSION_CREATE_MS = 5000
 const CALL_MS = 30_000
 
 /** A step clicks the element of that role whose accessible name matches, in the page. */
@@ -76,22 +76,22 @@ export async function call(
   base: string,
   method: string,
   path: string,
-  body?: Json,
-  timeoutMs?: number,
+  extra?: { body?: Json; timeoutMs?: number },
 ): Promise<unknown> {
-  const ms = timeoutMs ?? (method === 'POST' && path === '/session' ? SESSION_CREATE_MS : CALL_MS)
+  const ms =
+    extra?.timeoutMs ?? (method === 'POST' && path === '/session' ? SESSION_CREATE_MS : CALL_MS)
   let res: Response
   try {
     res = await fetch(base + path, {
       method,
       headers: { 'content-type': 'application/json' },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      ...(extra?.body ? { body: JSON.stringify(extra.body) } : {}),
       signal: AbortSignal.timeout(ms),
     })
   } catch (e) {
     const timedOut = e instanceof Error && (e.name === 'TimeoutError' || e.name === 'AbortError')
     if (timedOut) {
-      throw new Error(`${method} ${path}: timed out after ${ms}ms`)
+      throw new Error(`${method} ${path}: timed out after ${ms}ms`, { cause: e })
     }
     throw e
   }
@@ -142,23 +142,27 @@ const click = async ({ base, id }: Session, s: Step) => {
   }
   return Boolean(
     await call(base, 'POST', `/session/${id}/execute/async`, {
-      script: CLICK,
-      args: [s.role, s.name, s.within ?? ''],
+      body: { script: CLICK, args: [s.role, s.name, s.within ?? ''] },
     }),
   )
 }
 
 const still = ({ base, id }: Session, maxMs: number) =>
-  call(base, 'POST', `/session/${id}/execute/async`, { script: STILL, args: [QUIET_MS, maxMs] })
+  call(base, 'POST', `/session/${id}/execute/async`, {
+    body: { script: STILL, args: [QUIET_MS, maxMs] },
+  })
 
 async function load(session: Session, url: string) {
-  await call(session.base, 'POST', `/session/${session.id}/url`, { url })
+  await call(session.base, 'POST', `/session/${session.id}/url`, { body: { url } })
   await still(session, SETTLE_MS)
 }
 
 const PNG_SIGNATURE = Buffer.from('89504e470d0a1a0a', 'hex')
 const MAX_SHOT_BYTES = 33_554_432
-const MAX_SHOT_B64 = Math.ceil((MAX_SHOT_BYTES * 4) / 3) + 4
+const B64_CHARS = 4
+const B64_BYTES = 3
+const B64_PAD = 4
+const MAX_SHOT_B64 = Math.ceil((MAX_SHOT_BYTES * B64_CHARS) / B64_BYTES) + B64_PAD
 
 /** The driver's answer as screenshot bytes, and only a PNG within the cap: whatever answers on the driver's port
  * would otherwise choose what lands on disk under a name this walk owns. */
@@ -229,8 +233,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
   await still(session, SETTLE_MS)
   for (const fn of [collapsed, covered, overflow]) {
     const found = await call(session.base, 'POST', `/session/${session.id}/execute/sync`, {
-      script: check(fn),
-      args: [],
+      body: { script: check(fn), args: [] },
     })
     for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
       breaks.push({ screen: screen.name, ...(b as unknown as LayoutBreak) })
@@ -269,16 +272,18 @@ export async function webkitWalk(w: Walk): Promise<WalkBreak[] | null> {
   try {
     await sleep(DRIVER_START_MS)
     const created = await call(base, 'POST', '/session', {
-      capabilities: {
-        alwaysMatch: {
-          'webkitgtk:browserOptions': { binary: browser, args: ['--automation'] },
+      body: {
+        capabilities: {
+          alwaysMatch: {
+            'webkitgtk:browserOptions': { binary: browser, args: ['--automation'] },
+          },
         },
       },
     })
     const session = { base, id: isJson(created) ? String(created.sessionId) : '' }
-    await call(base, 'POST', `/session/${session.id}/window/rect`, w.view ?? DEFAULT_VIEW).catch(
-      () => undefined,
-    )
+    await call(base, 'POST', `/session/${session.id}/window/rect`, {
+      body: w.view ?? DEFAULT_VIEW,
+    }).catch(() => undefined)
     await load(session, w.url)
     for (const screen of w.screens) {
       breaks.push(...(await visit(session, screen, w)))

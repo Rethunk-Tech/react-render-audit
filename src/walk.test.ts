@@ -22,15 +22,15 @@ test('hasStep matches role, name, and within', () => {
 
 test('call rejects when the driver never answers', async () => {
   const server = createServer(() => undefined)
-  await new Promise<void>((resolve) => {
-    server.listen(0, '127.0.0.1', resolve)
+  await new Promise<void>((done) => {
+    server.listen(0, '127.0.0.1', done)
   })
   const addr = server.address()
   const port = typeof addr === 'object' && addr ? addr.port : 0
   try {
-    await expect(call(`http://127.0.0.1:${port}`, 'GET', '/hang', undefined, 50)).rejects.toThrow(
-      /timed out after 50ms/,
-    )
+    await expect(
+      call(`http://127.0.0.1:${port}`, 'GET', '/hang', { timeoutMs: 50 }),
+    ).rejects.toThrow(/timed out after 50ms/)
   } finally {
     server.close()
   }

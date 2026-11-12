@@ -16,6 +16,7 @@ export interface GapOptions {
   ownClassPrefix?: string
 }
 
+// biome-ignore lint/complexity/noExcessiveLinesPerFunction: page-side script cannot close over helpers
 export function unevenSpacing(
   page: Page,
   { skip = 'svg', ownClassPrefix = '' }: GapOptions = {},
