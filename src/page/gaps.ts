@@ -79,6 +79,9 @@ export function unevenSpacing(
             add((node as Element).getBoundingClientRect())
           }
         }
+        if (n >= MaxPainted) {
+          return null
+        }
         return Number.isFinite(top) ? new DOMRect(left, top, right - left, bottom - top) : null
       }
       const name = (el: Element) => {

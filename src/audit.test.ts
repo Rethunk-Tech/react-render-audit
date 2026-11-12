@@ -89,6 +89,22 @@ test('uneven spacing names a stack with gaps 8/8/24, and an even one is clean', 
   await even.close()
 })
 
+test('uneven spacing skips a row whose painted walk hits the node cap', async () => {
+  const filler = '<span></span>'.repeat(500)
+  const p = await page(`
+    <div id="stack" style="width:300px">
+      <div style="height:20px;background:#ccc">a</div>
+      <div style="margin-top:8px">
+        <div style="height:4px;background:#ccc">mid-top</div>
+        ${filler}
+        <div style="height:4px;background:#ccc">mid-bottom</div>
+      </div>
+      <div style="height:20px;background:#ccc;margin-top:8px">c</div>
+    </div>`)
+  expect(await unevenSpacing(p)).toEqual([])
+  await p.close()
+})
+
 test('nested boxes: a bordered box in a bordered box, unless the outer one is a surface', async () => {
   const html = (outerClass: string) => `
     <div class="${outerClass}" style="border:1px solid #888;border-radius:6px;padding:10px;width:400px">
