@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
-import { resolve } from 'node:path'
-import { call, hasStep, nameMatches, shotBytes, shotFile } from './walk.ts'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { call, hasStep, nameMatches, shotBytes, shotFile, webkitWalk } from './walk.ts'
 
 test('nameMatches is literal', () => {
   expect(nameMatches('Items (3)', 'Items (3)')).toBe(true)
@@ -73,4 +75,17 @@ describe('shotFile', () => {
     expect(() => shotFile('/tmp/shots', '..')).toThrow('file name')
     expect(() => shotFile('/tmp/shots', '')).toThrow('file name')
   })
+})
+
+test('webkitWalk rejects when the driver binary cannot be started', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'walk-'))
+  const bin = join(dir, 'driver')
+  writeFileSync(bin, 'not executable', { mode: 0o644 })
+  try {
+    await expect(
+      webkitWalk({ url: 'http://127.0.0.1:1/', screens: [], env: {}, driver: bin, browser: bin }),
+    ).rejects.toThrow()
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })

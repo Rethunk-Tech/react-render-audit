@@ -266,11 +266,14 @@ export async function webkitWalk(w: Walk): Promise<WalkBreak[] | null> {
     driver.kill()
     process.kill(process.pid, signal)
   }
+  // An unstartable binary emits `error` on the child; unhandled it would crash the process instead of failing the walk.
+  const unstartable = new Promise<never>((_, reject) => driver.once('error', reject))
+  unstartable.catch(() => undefined)
   process.once('SIGINT', stop)
   process.once('SIGTERM', stop)
   const breaks: WalkBreak[] = []
   try {
-    await sleep(DRIVER_START_MS)
+    await Promise.race([sleep(DRIVER_START_MS), unstartable])
     const created = await call(base, 'POST', '/session', {
       body: {
         capabilities: {
