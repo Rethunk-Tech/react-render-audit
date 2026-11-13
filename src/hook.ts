@@ -106,11 +106,13 @@ export function hookScript({
   new PerformanceObserver((list) => {
     for (const e of list.getEntries()) { st.longTasks++; st.longMs += e.duration }
   }).observe({ type: 'longtask', buffered: true })
-  document.addEventListener('DOMContentLoaded', () => {
+  const watchMutations = () => {
     new MutationObserver((m) => { st.mutations += m.length }).observe(document.documentElement, {
       subtree: true, childList: true, attributes: true, characterData: true,
     })
-  })
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchMutations)
+  else watchMutations()
   window[${JSON.stringify(global)}] = {
     reset() { Object.assign(st, { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0, t0: performance.now(), last: 0, lastWhy: [] }) },
     // settledMs: from the reset to the last commit, the wall time until the screen stopped changing.

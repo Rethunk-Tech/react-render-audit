@@ -59,3 +59,25 @@ test('hookScript is idempotent for the same options', () => {
 test('hookScript default global is JSON-encoded DEFAULT_GLOBAL', () => {
   expect(hookScript().includes(`window[${JSON.stringify(DEFAULT_GLOBAL)}]`)).toBe(true)
 })
+
+test('hookScript starts watching mutations when the document has already loaded', () => {
+  const observed: unknown[] = []
+  const mutationObserver = function (this: { observe: (t: unknown) => void }) {
+    this.observe = (target) => observed.push(target)
+  }
+  const performanceObserver = function (this: { observe: () => void }) {
+    this.observe = () => undefined
+  }
+  const root = {}
+  const doc = { readyState: 'complete', documentElement: root, addEventListener: () => undefined }
+  const win = { setInterval: () => 0 }
+  new Function(
+    'window',
+    'document',
+    'performance',
+    'PerformanceObserver',
+    'MutationObserver',
+    hookScript(),
+  )(win, doc, { now: () => 0 }, performanceObserver, mutationObserver)
+  expect(observed).toEqual([root])
+})
