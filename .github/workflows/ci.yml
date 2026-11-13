@@ -29,13 +29,13 @@ jobs:
 
       # node-version also puts npm on the runner, which the pack check runs.
       - name: Set up Bun
-        uses: Rethunk-Tech/gh-actions/setup-bun@00f86ab1d379ecfb8d7d5b5cfa6e21a2722ac159 # v1.25
+        uses: Rethunk-Tech/gh-actions/setup-bun@48cc92115e037b2ee57da2264f318265c8a78ec7 # v1.26
         with:
           node-version: "24"
 
       # `gate` is a Go program; the toolchain exists only to install it.
       - name: Set up Go
-        uses: Rethunk-Tech/gh-actions/setup-go@00f86ab1d379ecfb8d7d5b5cfa6e21a2722ac159 # v1.25
+        uses: Rethunk-Tech/gh-actions/setup-go@48cc92115e037b2ee57da2264f318265c8a78ec7 # v1.26
         with:
           go-version: 1.27.4
 
