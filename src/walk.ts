@@ -203,10 +203,22 @@ async function shoot({ base, id }: Session, dir: string, name: string) {
   )
 }
 
+/** Layout findings from a page that never reached this screen are not this screen's. */
+export function shapeBreaks(
+  screen: string,
+  missing: Array<{ where: string; text: string }>,
+  layouts: LayoutBreak[],
+): WalkBreak[] {
+  if (missing.length > 0) {
+    return missing.map((m) => ({ screen, kind: 'missing' as const, ...m }))
+  }
+  return layouts.map((b) => ({ screen, ...b }))
+}
+
 // Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks. The
 // loading picture is taken as the last step lands, the settled one after the wait.
 async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBreak[]> {
-  const breaks: WalkBreak[] = []
+  const missing: Array<{ where: string; text: string }> = []
   let reached = true
   for (const s of screen.steps) {
     reached = reached && (await click(session, s))
@@ -222,7 +234,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
       ...screen.steps.filter((x) => !hasStep(screen.from ?? [], x)),
     ]) {
       if (!(await click(session, s))) {
-        breaks.push({ screen: screen.name, kind: 'missing', where: s.role, text: s.name })
+        missing.push({ where: s.role, text: s.name })
       }
       if (w.shots && s === screen.steps.at(-1)) {
         await shoot(session, join(w.shots, 'loading'), screen.name)
@@ -231,18 +243,21 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
     }
   }
   await still(session, SETTLE_MS)
-  for (const fn of [collapsed, covered, overflow]) {
-    const found = await call(session.base, 'POST', `/session/${session.id}/execute/sync`, {
-      body: { script: check(fn), args: [] },
-    })
-    for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
-      breaks.push({ screen: screen.name, ...(b as unknown as LayoutBreak) })
+  const layouts: LayoutBreak[] = []
+  if (missing.length === 0) {
+    for (const fn of [collapsed, covered, overflow]) {
+      const found = await call(session.base, 'POST', `/session/${session.id}/execute/sync`, {
+        body: { script: check(fn), args: [] },
+      })
+      for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
+        layouts.push(b as unknown as LayoutBreak)
+      }
     }
   }
   if (w.shots) {
     await shoot(session, w.shots, screen.name)
   }
-  return breaks
+  return shapeBreaks(screen.name, missing, layouts)
 }
 
 /** Walks every screen in WebKitGTK through WebKitWebDriver and returns the layout breaks found, or null when the driver
