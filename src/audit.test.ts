@@ -242,7 +242,7 @@ test('Meter with muiPreset.libraryNames keeps app names that share an unanchored
   const p = await page('<body></body>')
   await p.evaluate(() => {
     ;(globalThis as unknown as { counts: object }).counts = {
-      reset() {},
+      reset: () => undefined,
       stillMs: () => 0,
       read: () => ({
         commits: 0,
