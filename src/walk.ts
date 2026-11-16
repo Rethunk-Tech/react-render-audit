@@ -15,6 +15,7 @@ const DEFAULT_DRIVER = '/usr/bin/WebKitWebDriver'
 const DEFAULT_BROWSER = '/usr/libexec/webkit2gtk-4.1/MiniBrowser'
 const SESSION_CREATE_MS = 5000
 const CALL_MS = 30_000
+const ERROR_PREVIEW_CHARS = 300
 
 /** A step clicks the element of that role whose accessible name matches, in the page. */
 export interface Step {
@@ -59,6 +60,22 @@ export type WalkBreak = { screen: string } & (
 type Json = Record<string, unknown>
 const isJson = (v: unknown): v is Json => typeof v === 'object' && v !== null
 
+/** The driver's JSON `value`, or an error that names the HTTP status and body. */
+export function driverValue(method: string, path: string, status: number, body: string): unknown {
+  let json: unknown
+  try {
+    json = JSON.parse(body)
+  } catch {
+    throw new Error(`${method} ${path}: ${status} ${body.slice(0, ERROR_PREVIEW_CHARS)}`)
+  }
+  if (!(status >= 200 && status < 300 && isJson(json) && !Array.isArray(json))) {
+    throw new Error(
+      `${method} ${path}: ${status} ${JSON.stringify(json).slice(0, ERROR_PREVIEW_CHARS)}`,
+    )
+  }
+  return json.value
+}
+
 /** Literal accessible-name match: trimmed label equals name. Empty names are rejected. */
 export function nameMatches(label: string, name: string): boolean {
   if (name.trim() === '') {
@@ -95,11 +112,7 @@ export async function call(
     }
     throw e
   }
-  const json: unknown = await res.json()
-  if (!(res.ok && isJson(json))) {
-    throw new Error(`${method} ${path}: ${JSON.stringify(json).slice(0, ERROR_PREVIEW_CHARS)}`)
-  }
-  return json.value
+  return driverValue(method, path, res.status, await res.text())
 }
 
 // The page-side click: the first element of the role whose aria-label or text matches, waiting up to a few seconds.
@@ -127,7 +140,6 @@ const STILL = `
   tick()
 `
 const QUIET_MS = 300
-const ERROR_PREVIEW_CHARS = 300
 const check = (fn: () => unknown) => `return (${fn.toString()})()`
 
 /** One WebDriver session: the driver's address and the session's id. */
