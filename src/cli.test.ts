@@ -1,10 +1,10 @@
+import { expect, test } from 'bun:test'
 import { spawnSync } from 'node:child_process'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { expect, test } from 'bun:test'
 
 test('render-diff exits 2 when a path is a file', () => {
   const dir = mkdtempSync(join(tmpdir(), 'render-diff-'))
