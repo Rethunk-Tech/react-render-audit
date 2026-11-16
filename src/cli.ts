@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync } from 'node:fs'
+import { statSync } from 'node:fs'
 import process from 'node:process'
 import { diffShots } from './diff.ts'
 
@@ -7,10 +7,18 @@ const PERCENT = 100
 const PAD = 6
 const USAGE_EXIT = 2
 
+function isDir(path: string): boolean {
+  try {
+    return statSync(path).isDirectory()
+  } catch {
+    return false
+  }
+}
+
 // render-diff OLD_SHOTS_DIR NEW_SHOTS_DIR: lists each screen whose pixels differ, most changed first, then the screens
 // only one side has. Exits 0; it reports, it does not judge.
 const [oldDir, newDir] = process.argv.slice(2)
-if (!(oldDir && newDir && existsSync(oldDir) && existsSync(newDir))) {
+if (!(oldDir && newDir && isDir(oldDir) && isDir(newDir))) {
   console.error('usage: render-diff OLD_SHOTS_DIR NEW_SHOTS_DIR')
   process.exit(USAGE_EXIT)
 }
