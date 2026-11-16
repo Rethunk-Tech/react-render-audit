@@ -4,7 +4,7 @@ export const muiPreset = {
   ignoreCommitsOf: ['TouchRipple'],
   /** Building blocks every MUI component renders through; a report should name the app's own components instead. */
   libraryNames:
-    /^(Insertion|Styled\(|Mui|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List|TableCell$|TableRow$)/,
+    /^(Insertion|Styled\(|Mui([A-Z]|$)|Box$|Typography$|ButtonBase$|anonymous$|TouchRipple|Ripple$|Popper|Portal$|Grow$|Fade$|Collapse$|Transition$|SvgIcon$|Tooltip$|Modal$|Dialog$|Paper$|Button$|IconButton$|InputBase$|FormControl$|Chip$|Menu$|List($|Item)|TableCell$|TableRow$)/,
   ownClassPrefix: 'Mui',
   /** Surfaces content sits on, which never count as a card. */
   surfaces: '.MuiDialog-paper, .MuiPopover-paper, .MuiMenu-paper, .MuiTooltip-tooltip',

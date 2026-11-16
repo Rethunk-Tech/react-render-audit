@@ -23,10 +23,17 @@ export function collapsed(): LayoutBreak[] {
   const out: LayoutBreak[] = []
   const layers = [...document.querySelectorAll('[role="dialog"], [role="menu"], [role="listbox"]')]
   // A menu kept mounted while closed is hidden, not gone: only a shown layer is the one on top.
-  const top =
-    layers.findLast(
-      (el) => el.getBoundingClientRect().width > 0 && getComputedStyle(el).visibility !== 'hidden',
-    ) ?? document.body
+  const shown = (el: Element) => {
+    const s = getComputedStyle(el)
+    return (
+      el.getBoundingClientRect().width > 0 &&
+      s.display !== 'none' &&
+      s.visibility !== 'hidden' &&
+      Number(s.opacity) > 0 &&
+      el.getAttribute('aria-hidden') !== 'true'
+    )
+  }
+  const top = layers.findLast(shown) ?? document.body
   for (const el of top.querySelectorAll('img, [role="img"], button, [role="button"], a[href]')) {
     const r = el.getBoundingClientRect()
     const inView = r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth
@@ -91,10 +98,17 @@ export function covered(): LayoutBreak[] {
   }
   const layers = [...document.querySelectorAll('[role="dialog"], [role="menu"], [role="listbox"]')]
   // A menu kept mounted while closed is hidden, not gone: only a shown layer is the one on top.
-  const top =
-    layers.findLast(
-      (el) => el.getBoundingClientRect().width > 0 && getComputedStyle(el).visibility !== 'hidden',
-    ) ?? document.body
+  const shown = (el: Element) => {
+    const s = getComputedStyle(el)
+    return (
+      el.getBoundingClientRect().width > 0 &&
+      s.display !== 'none' &&
+      s.visibility !== 'hidden' &&
+      Number(s.opacity) > 0 &&
+      el.getAttribute('aria-hidden') !== 'true'
+    )
+  }
+  const top = layers.findLast(shown) ?? document.body
   // A side panel laid over a list on purpose (a positioned aside) hides what is under it by design.
   const overPanel = (hit: Element) => {
     const panel = hit.closest('aside')

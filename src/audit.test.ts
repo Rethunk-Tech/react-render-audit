@@ -46,6 +46,24 @@ test('layout breaks: a collapsed image, a covered label, a page wider than its w
   await p.close()
 })
 
+test('layout breaks: an opacity-0 overlay still in the DOM is not the covering layer', async () => {
+  const p = await page(`
+    <body style="margin:0">
+      <div role="dialog" style="width:400px;height:400px;opacity:0;position:fixed;inset:0">Closed</div>
+      <img alt="sliver" style="display:block;width:2px;height:40px" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+      <div style="position:relative;margin:20px;width:200px;height:30px">
+        <span>Hidden label</span>
+        <div style="position:absolute;inset:0;background:#000"></div>
+      </div>
+      <div style="width:2000px;height:10px"></div>
+    </body>`)
+  const kinds = (await layoutBreaks(p)).map((b) => b.kind)
+  expect(kinds).toContain('collapsed')
+  expect(kinds).toContain('covered')
+  expect(kinds).toContain('overflow')
+  await p.close()
+})
+
 test('covered: a closed menu kept mounted still lets the page be checked, and an aside laid over a list hides it by design', async () => {
   const p = await page(`
     <body style="margin:0">
@@ -218,4 +236,36 @@ test('muiPreset names the selectors the checks take as options', () => {
   expect(muiPreset.libraryNames.test('ModCard')).toBe(false)
   expect(muiPreset.ownClassPrefix).toBe('Mui')
   expect(hookScript(muiPreset)).toContain('["TouchRipple"]')
+})
+
+test('Meter with muiPreset.libraryNames keeps app names that share an unanchored MUI prefix', async () => {
+  const p = await page('<body></body>')
+  await p.evaluate(() => {
+    ;(globalThis as unknown as { counts: object }).counts = {
+      reset() {},
+      stillMs: () => 0,
+      read: () => ({
+        commits: 0,
+        mounts: 0,
+        updates: 0,
+        names: { Listing: 9, Counter: 2 },
+        roots: {},
+        why: {},
+        mutations: 0,
+        longTasks: 0,
+        longMs: 0,
+        settledMs: 0,
+        lastWhy: [],
+      }),
+    }
+  })
+  const meter = new Meter(p, await context.newCDPSession(p), {
+    libraryNames: muiPreset.libraryNames,
+    global: 'counts',
+  })
+  expect((await meter.read()).top).toEqual([
+    ['Listing', 9],
+    ['Counter', 2],
+  ])
+  await p.close()
 })
