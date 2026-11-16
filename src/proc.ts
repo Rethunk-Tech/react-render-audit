@@ -20,11 +20,15 @@ const CLOCK_TICKS_PER_S = 100
 function parents(): Map<number, number> {
   const map = new Map<number, number>()
   for (const name of readdirSync('/proc')) {
+    const pid = Number(name)
+    if (!Number.isInteger(pid)) {
+      continue
+    }
     try {
       const stat = readFileSync(`/proc/${name}/stat`, 'utf8')
       // The command name may hold spaces and parentheses, so the fields start after the last one.
       const rest = stat.slice(stat.lastIndexOf(')') + 2).split(' ')
-      map.set(Number(name), Number(rest[1]))
+      map.set(pid, Number(rest[1]))
     } catch {
       // Not a process, or it ended while the walk ran.
     }

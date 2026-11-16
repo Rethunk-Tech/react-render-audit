@@ -10,6 +10,10 @@ describe.skipIf(!linux)('proc', () => {
     expect(tree(process.pid)).toContain(process.pid)
   })
 
+  test('tree skips non-numeric /proc entries', () => {
+    expect(tree(process.ppid).every((pid) => Number.isInteger(pid))).toBe(true)
+  })
+
   test('pssKiB reads a live process and answers 0 for a gone one', () => {
     expect(pssKiB(process.pid)).toBeGreaterThan(0)
     expect(pssKiB(gone)).toBe(0)
