@@ -107,7 +107,10 @@ export class Meter {
     this.cdp = cdp
     this.backendCall = backendCall
     this.top = top
+    // g/y keep lastIndex across .test, so later names in the top loop would miss.
     this.libraryNames = libraryNames
+      ? new RegExp(libraryNames.source, libraryNames.flags.replace(/[gy]/g, ''))
+      : null
     this.global = global
     this.log = log
     const settled = (r: Request) => {
@@ -162,6 +165,8 @@ export class Meter {
   }
 
   private async metrics(): Promise<Metrics> {
+    // getMetrics returns empty names until the Performance domain is enabled.
+    await this.cdp.send('Performance.enable')
     const { metrics } = await this.cdp.send('Performance.getMetrics')
     return Object.fromEntries(metrics.map((m) => [m.name, m.value]))
   }
@@ -241,7 +246,9 @@ export function perTen(s: Sample, watchedMs: number): Sample {
     mounts: scale(s.mounts),
     updates: scale(s.updates),
     mutations: scale(s.mutations),
+    longTasks: scale(s.longTasks),
     calls: scale(s.calls),
+    callsBy: s.callsBy.map(([n, v]) => [n, scale(v)]),
     layouts: scale(s.layouts),
     styles: scale(s.styles),
     scriptMs: scale(s.scriptMs),
