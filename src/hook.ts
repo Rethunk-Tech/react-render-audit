@@ -18,6 +18,9 @@ export function hookScript({
   ignoreCommitsOf: ignore = [],
   quietIntervalsFromMs: quietFromMs = QUIET_INTERVAL_MS,
 }: HookOptions = {}): string {
+  if (!Number.isFinite(quietFromMs)) {
+    throw new Error(`quietIntervalsFromMs must be finite, got ${String(quietFromMs)}`)
+  }
   return `(() => {
   const st = { commits: 0, mounts: 0, updates: 0, names: {}, roots: {}, why: {}, mutations: 0, longTasks: 0, longMs: 0, t0: performance.now(), last: 0, lastWhy: [] }
   // What started the cascades of the commit being walked, so the last commit of an action can be named.
@@ -103,9 +106,11 @@ export function hookScript({
     onPostCommitFiberRoot() {},
     checkDCE() {},
   }
-  new PerformanceObserver((list) => {
-    for (const e of list.getEntries()) { st.longTasks++; st.longMs += e.duration }
-  }).observe({ type: 'longtask', buffered: true })
+  try {
+    new PerformanceObserver((list) => {
+      for (const e of list.getEntries()) { st.longTasks++; st.longMs += e.duration }
+    }).observe({ type: 'longtask', buffered: true })
+  } catch {}
   const watchMutations = () => {
     new MutationObserver((m) => { st.mutations += m.length }).observe(document.documentElement, {
       subtree: true, childList: true, attributes: true, characterData: true,

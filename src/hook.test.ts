@@ -9,7 +9,7 @@ test('hookScript does not throw on arbitrary options', () => {
         {
           global: fc.string(),
           ignoreCommitsOf: fc.array(fc.string()),
-          quietIntervalsFromMs: fc.double(),
+          quietIntervalsFromMs: fc.double({ noNaN: true, min: -1e12, max: 1e12 }),
         },
         { requiredKeys: [] },
       ),
@@ -58,6 +58,37 @@ test('hookScript is idempotent for the same options', () => {
 
 test('hookScript default global is JSON-encoded DEFAULT_GLOBAL', () => {
   expect(hookScript().includes(`window[${JSON.stringify(DEFAULT_GLOBAL)}]`)).toBe(true)
+})
+
+test('hookScript rejects non-finite quietIntervalsFromMs', () => {
+  for (const quietIntervalsFromMs of [Number.NaN, Infinity, -Infinity]) {
+    expect(() => hookScript({ quietIntervalsFromMs })).toThrow(
+      /quietIntervalsFromMs must be finite/,
+    )
+  }
+})
+
+test('hookScript installs the global when longtask observation is unsupported', () => {
+  const performanceObserver = function (this: { observe: () => void }) {
+    this.observe = () => {
+      throw new TypeError('entry type not supported')
+    }
+  }
+  const mutationObserver = function (this: { observe: () => void }) {
+    this.observe = () => undefined
+  }
+  const win: { setInterval: () => number; [key: string]: unknown } = { setInterval: () => 0 }
+  const doc = { readyState: 'complete', documentElement: {}, addEventListener: () => undefined }
+  new Function(
+    'window',
+    'document',
+    'performance',
+    'PerformanceObserver',
+    'MutationObserver',
+    hookScript(),
+  )(win, doc, { now: () => 0 }, performanceObserver, mutationObserver)
+  expect(typeof win[DEFAULT_GLOBAL]).toBe('object')
+  expect(typeof win.__REACT_DEVTOOLS_GLOBAL_HOOK__).toBe('object')
 })
 
 test('hookScript starts watching mutations when the document has already loaded', () => {
