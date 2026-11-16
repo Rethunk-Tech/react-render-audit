@@ -65,8 +65,10 @@ export function driverValue(method: string, path: string, status: number, body: 
   let json: unknown
   try {
     json = JSON.parse(body)
-  } catch {
-    throw new Error(`${method} ${path}: ${status} ${body.slice(0, ERROR_PREVIEW_CHARS)}`)
+  } catch (e) {
+    throw new Error(`${method} ${path}: ${status} ${body.slice(0, ERROR_PREVIEW_CHARS)}`, {
+      cause: e,
+    })
   }
   if (!(status >= 200 && status < 300 && isJson(json) && !Array.isArray(json))) {
     throw new Error(
@@ -227,6 +229,19 @@ export function shapeBreaks(
   return layouts.map((b) => ({ screen, ...b }))
 }
 
+async function layoutOf(session: Session): Promise<LayoutBreak[]> {
+  const layouts: LayoutBreak[] = []
+  for (const fn of [collapsed, covered, overflow]) {
+    const found = await call(session.base, 'POST', `/session/${session.id}/execute/sync`, {
+      body: { script: check(fn), args: [] },
+    })
+    for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
+      layouts.push(b as unknown as LayoutBreak)
+    }
+  }
+  return layouts
+}
+
 // Reaches one screen from the one before, reloading only when a step finds nothing, and returns its layout breaks. The
 // loading picture is taken as the last step lands, the settled one after the wait.
 async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBreak[]> {
@@ -255,17 +270,7 @@ async function visit(session: Session, screen: Screen, w: Walk): Promise<WalkBre
     }
   }
   await still(session, SETTLE_MS)
-  const layouts: LayoutBreak[] = []
-  if (missing.length === 0) {
-    for (const fn of [collapsed, covered, overflow]) {
-      const found = await call(session.base, 'POST', `/session/${session.id}/execute/sync`, {
-        body: { script: check(fn), args: [] },
-      })
-      for (const b of Array.isArray(found) ? found.filter(isJson) : []) {
-        layouts.push(b as unknown as LayoutBreak)
-      }
-    }
-  }
+  const layouts = missing.length === 0 ? await layoutOf(session) : []
   if (w.shots) {
     await shoot(session, w.shots, screen.name)
   }
