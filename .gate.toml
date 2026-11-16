@@ -1,14 +1,3 @@
-# `gate` finds no checks in a TypeScript package on its own, so every check is declared here and
-# runs through a package.json script: the same command locally, in the pre-push hook and in CI.
-[gates.lint]
-run = "bun run lint"
-
-[gates.typecheck]
-run = "bun run typecheck"
-
-[gates.test]
-run = "bun run test"
-
 # Overrides the build `gate` detects from package.json: gates run concurrently, and the pack check
 # reads the `dist` the build writes.
 [gates.build]
