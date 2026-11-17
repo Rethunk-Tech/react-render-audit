@@ -88,6 +88,31 @@ test('layout breaks: a sane page has none', async () => {
   await p.close()
 })
 
+test('layout breaks: a shown dialog is the layer that is checked', async () => {
+  const p = await page(`
+    <body style="margin:0">
+      <img alt="page-sliver" style="display:block;width:2px;height:40px" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+      <div role="dialog" style="width:400px;height:400px;position:fixed;inset:0;background:#fff">
+        <img alt="dialog-sliver" style="display:block;width:2px;height:40px" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+      </div>
+    </body>`)
+  const collapsed = (await layoutBreaks(p)).filter((b) => b.kind === 'collapsed')
+  expect(collapsed.some((b) => b.text.includes('dialog-sliver'))).toBe(true)
+  expect(collapsed.some((b) => b.text.includes('page-sliver'))).toBe(false)
+  await p.close()
+})
+
+test('covered: a sticky bar and an aria-live region over text are not coverage', async () => {
+  const p = await page(`
+    <body style="margin:0">
+      <p style="margin:48px 0 0">Body text here</p>
+      <div style="position:fixed;top:48px;left:0;width:200px;height:20px;background:#000">bar</div>
+      <div aria-live="polite" style="position:absolute;top:48px;left:220px;width:200px;height:20px;background:#f00">toast</div>
+    </body>`)
+  expect((await layoutBreaks(p)).filter((b) => b.kind === 'covered')).toEqual([])
+  await p.close()
+})
+
 test('uneven spacing names a stack with gaps 8/8/24, and an even one is clean', async () => {
   const rows = (gaps: number[]) =>
     `<div id="stack" style="width:300px">${['a', 'b', 'c', 'd']
@@ -105,6 +130,15 @@ test('uneven spacing names a stack with gaps 8/8/24, and an even one is clean', 
   expect(await unevenSpacing(even)).toEqual([])
   expect(await unevenSpacing(even, { skip: '' })).toEqual([])
   await even.close()
+})
+
+test('uneven spacing names a card inset more at the top than the bottom', async () => {
+  const p = await page(`
+    <div style="background:#eee;width:300px;padding:24px 8px 4px">
+      <div style="height:40px;background:#ccc">card text</div>
+    </div>`)
+  expect((await unevenSpacing(p)).find((f) => f.kind === 'inset')?.sizes).toEqual([24, 4])
+  await p.close()
 })
 
 test('uneven spacing skips a row whose painted walk hits the node cap', async () => {
@@ -138,6 +172,13 @@ test('nested boxes: a bordered box in a bordered box, unless the outer one is a 
   const surface = await page(html('paper'))
   expect(await nestedBoxes(surface, { surfaces: '.paper' })).toEqual([])
   await surface.close()
+
+  const control = await page(`
+    <div style="border:1px solid #888;border-radius:6px;padding:10px;width:400px">
+      <input style="border:1px solid #888;border-radius:6px;width:200px;height:40px">
+    </div>`)
+  expect(await nestedBoxes(control)).toEqual([])
+  await control.close()
 })
 
 test('the hook counts a click as an update of the component that started it, and a mount once', async () => {
