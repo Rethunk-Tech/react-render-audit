@@ -86,3 +86,36 @@ test('libraryNames matching is independent of g and y flags', async () => {
   }).read()
   expect(top.map(([n]) => n)).toEqual(['App'])
 })
+
+test('a main-frame navigation drops in-flight backend calls', async () => {
+  const handlers = new Map<string, ((arg: never) => void)[]>()
+  const main = {}
+  const page = {
+    evaluate: async () => 0,
+    on(event: string, fn: (arg: never) => void) {
+      handlers.set(event, [...(handlers.get(event) ?? []), fn])
+    },
+    mainFrame: () => main,
+  }
+  const fire = (event: string, arg: never) => {
+    for (const fn of handlers.get(event) ?? []) {
+      fn(arg)
+    }
+  }
+  const lines: string[] = []
+  const meter = new Meter(page as never, { send: async () => ({ metrics: [] }) } as never, {
+    backendCall: () => 'save',
+    log: (line) => {
+      lines.push(line)
+    },
+  })
+  fire('request', {} as never)
+  await meter.untilStill(1, 0)
+  expect(lines.at(-1)).toContain('save')
+  fire('framenavigated', {} as never)
+  await meter.untilStill(1, 0)
+  expect(lines.at(-1)).toContain('save')
+  fire('framenavigated', main as never)
+  await meter.untilStill(1, 0)
+  expect(lines.at(-1)).toMatch(/calls in flight: none$/)
+})
