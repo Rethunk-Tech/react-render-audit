@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import process from 'node:process'
-import { byRole, cpuSeconds, exeOf, mappings, pssKiB, roleOf, tree } from './proc.ts'
+import { browserRoot, byRole, cpuSeconds, exeOf, mappings, pssKiB, roleOf, tree } from './proc.ts'
 
 const linux = process.platform === 'linux'
 const gone = 2 ** 22
@@ -44,5 +44,9 @@ describe.skipIf(!linux)('proc', () => {
     const mibs = byRole(process.pid).map(([, mib]) => mib)
     expect(mibs.length).toBeGreaterThan(0)
     expect(mibs).toEqual([...mibs].sort((a, b) => b - a))
+  })
+
+  test('browserRoot throws when no Chromium is under the root', () => {
+    expect(() => browserRoot(gone)).toThrow('no Chromium process under this one')
   })
 })
