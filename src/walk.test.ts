@@ -48,6 +48,24 @@ test('call rejects when the driver never answers', async () => {
   }
 })
 
+test('call returns the driver value and rethrows a network error', async () => {
+  const server = createServer((_req, res) => {
+    res.writeHead(200, { 'content-type': 'application/json' })
+    res.end(JSON.stringify({ value: 7 }))
+  })
+  await new Promise<void>((done) => {
+    server.listen(0, '127.0.0.1', done)
+  })
+  const addr = server.address()
+  const port = typeof addr === 'object' && addr ? addr.port : 0
+  try {
+    expect(await call(`http://127.0.0.1:${port}`, 'POST', '/session', { body: { x: 1 } })).toBe(7)
+  } finally {
+    server.close()
+  }
+  await expect(call('http://127.0.0.1:1', 'GET', '/x', { timeoutMs: 200 })).rejects.toThrow()
+})
+
 test('shotBytes rejects over-cap encoding', () => {
   const cap = Math.ceil((33_554_432 * 4) / 3) + 4
   expect(() => shotBytes('a'.repeat(cap + 1))).toThrow(/over/)
@@ -100,6 +118,18 @@ test('webkitWalk rejects when the driver binary cannot be started', async () => 
   }
 })
 
+test('webkitWalk is null when the driver or browser binary is missing', async () => {
+  expect(
+    await webkitWalk({
+      url: 'http://127.0.0.1:1/',
+      screens: [],
+      env: {},
+      driver: '/no/such/driver',
+      browser: '/no/such/browser',
+    }),
+  ).toBe(null)
+})
+
 test('a missed step reports the miss without layout breaks', () => {
   const overflow: LayoutBreak = { kind: 'overflow', where: 'main', text: 'wide' }
   expect(shapeBreaks('home', [{ where: 'button', text: 'Go' }], [overflow])).toEqual([
@@ -107,9 +137,15 @@ test('a missed step reports the miss without layout breaks', () => {
   ])
 })
 
+test('shapeBreaks keeps layout breaks when every step was found', () => {
+  const overflow: LayoutBreak = { kind: 'overflow', where: 'html', text: 'wide' }
+  expect(shapeBreaks('home', [], [overflow])).toEqual([{ screen: 'home', ...overflow }])
+})
+
 test('a driver body that is not a JSON object names the response status', () => {
   expect(() => driverValue('POST', '/session', 500, '<html>fail</html>')).toThrow(
     'POST /session: 500 <html>fail</html>',
   )
   expect(() => driverValue('GET', '/session/1', 200, '[]')).toThrow('GET /session/1: 200 []')
+  expect(driverValue('GET', '/session/1', 200, '{"value":"ok"}')).toBe('ok')
 })
