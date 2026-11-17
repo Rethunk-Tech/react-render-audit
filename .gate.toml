@@ -1,3 +1,8 @@
+# No-op in CI: setup-bun's run-audit already runs audit-bun on the runner. Locally this is
+# the same auditor, which fails only on advisories whose fix has shipped.
+[gates.vuln]
+run = '[ -n "$CI" ] || bun /usr/local/src/com.github/Rethunk-Tech/gh-actions/audit-bun/audit.ts'
+
 # Overrides the build `gate` detects from package.json: gates run concurrently, and the pack check
 # reads the `dist` the build writes.
 [gates.build]

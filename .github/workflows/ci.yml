@@ -32,6 +32,7 @@ jobs:
         uses: Rethunk-Tech/gh-actions/setup-bun@71da648f666fb49a8e72d0576a4d8db97894ccaf # v1.29.1
         with:
           node-version: "24"
+          run-audit: "true"
 
       # `gate` is a Go program; the toolchain exists only to install it.
       - name: Set up Go
