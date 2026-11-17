@@ -61,7 +61,11 @@ test('hookScript default global is JSON-encoded DEFAULT_GLOBAL', () => {
 })
 
 test('hookScript rejects non-finite quietIntervalsFromMs', () => {
-  for (const quietIntervalsFromMs of [Number.NaN, Infinity, -Infinity]) {
+  for (const quietIntervalsFromMs of [
+    Number.NaN,
+    Number.POSITIVE_INFINITY,
+    Number.NEGATIVE_INFINITY,
+  ]) {
     expect(() => hookScript({ quietIntervalsFromMs })).toThrow(
       /quietIntervalsFromMs must be finite/,
     )
