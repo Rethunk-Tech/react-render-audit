@@ -10,6 +10,7 @@ import { Meter } from './meter.ts'
 import { nestedBoxes } from './page/boxes.ts'
 import { unevenSpacing } from './page/gaps.ts'
 import { layoutBreaks } from './page/layout.ts'
+import { comparePixels } from './page/pixels.ts'
 import { muiPreset } from './preset.ts'
 
 let browser: Browser
@@ -110,6 +111,81 @@ test('covered: a sticky bar and an aria-live region over text are not coverage',
       <div aria-live="polite" style="position:absolute;top:48px;left:220px;width:200px;height:20px;background:#f00">toast</div>
     </body>`)
   expect((await layoutBreaks(p)).filter((b) => b.kind === 'covered')).toEqual([])
+  await p.close()
+})
+
+test('covered: a stretched transparent title-link, clipped overflow text, pointer-events-none text, and a 1px screen-reader box are not coverage', async () => {
+  const p = await page(`
+    <style>article a::before { content:''; position:absolute; inset:0 }</style>
+    <body style="margin:0">
+      <article style="position:relative;width:300px;padding:20px">
+        <h2 style="margin:0"><a href="#x">Card title</a></h2>
+        <p style="margin:16px 0 0">Body copy here</p>
+      </article>
+      <div style="height:20px;overflow:hidden;width:200px">
+        <p style="margin:40px 0 0">Clipped label</p>
+      </div>
+      <div style="position:relative;margin:20px;width:200px;height:30px">
+        <span style="pointer-events:none">No pointer label</span>
+        <div style="position:absolute;inset:0;background:#000"></div>
+      </div>
+      <div style="position:relative;width:200px;height:30px">
+        <span style="position:absolute;width:1px;height:1px;overflow:hidden">SR only text</span>
+        <div style="width:200px;height:30px;background:#000"></div>
+      </div>
+    </body>`)
+  expect((await layoutBreaks(p)).filter((b) => b.kind === 'covered')).toEqual([])
+  await p.close()
+})
+
+test('layout breaks: a collapsed button is a break, and an aria-hidden dialog is not the layer that is checked', async () => {
+  // UA button min-width would keep a 2px width above the sliver threshold.
+  const p = await page(`
+    <body style="margin:0">
+      <button aria-label="thin-btn" style="display:block;width:2px;height:40px;padding:0;border:0;min-width:0"></button>
+      <div role="dialog" aria-hidden="true" style="width:400px;height:400px;position:fixed;inset:0;background:#fff">
+        <img alt="dialog-sliver" style="display:block;width:2px;height:40px" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+      </div>
+    </body>`)
+  const collapsed = (await layoutBreaks(p)).filter((b) => b.kind === 'collapsed')
+  expect(collapsed.some((b) => b.text.includes('thin-btn'))).toBe(true)
+  expect(collapsed.some((b) => b.text.includes('dialog-sliver'))).toBe(true)
+  await p.close()
+})
+
+test('pixels past tolerance are marked red and counted; pixels within it fade', async () => {
+  const p = await context.newPage()
+  const dataUrl = (pixels: number[], width: number) =>
+    p.evaluate(
+      ({ px, w }) => {
+        const c = document.createElement('canvas')
+        c.width = w
+        c.height = px.length / 4 / w
+        const ctx = c.getContext('2d') as CanvasRenderingContext2D
+        ctx.putImageData(new ImageData(new Uint8ClampedArray(px), w, c.height), 0, 0)
+        return c.toDataURL('image/png')
+      },
+      { px: pixels, w: width },
+    )
+  const black = [0, 0, 0, 255]
+  const over = [25, 0, 0, 255]
+  const a = await dataUrl([...black, ...black], 2)
+  const b = await dataUrl([...black, ...over], 2)
+  const result = await p.evaluate(comparePixels, { a, b, tolerance: 24 })
+  expect(result.changed).toBe(0.5)
+  const rgba = await p.evaluate(async (png) => {
+    const img = new Image()
+    img.src = `data:image/png;base64,${png}`
+    await img.decode()
+    const c = document.createElement('canvas')
+    c.width = img.width
+    c.height = img.height
+    const ctx = c.getContext('2d') as CanvasRenderingContext2D
+    ctx.drawImage(img, 0, 0)
+    return [...ctx.getImageData(0, 0, 2, 1).data]
+  }, result.png)
+  expect(rgba.slice(0, 4)).toEqual([0, 0, 0, 70])
+  expect(rgba.slice(4, 8)).toEqual([255, 0, 0, 255])
   await p.close()
 })
 
