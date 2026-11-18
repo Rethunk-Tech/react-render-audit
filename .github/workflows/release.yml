@@ -60,3 +60,34 @@ jobs:
             exit 0
           fi
           npm publish --provenance --access public
+
+  release:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      # fetch-depth: 0 brings the annotated tag OBJECT, not just the commit it points at.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Create the GitHub Release from the tag's own annotation
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; nothing to do."
+            exit 0
+          fi
+          subject=$(git tag -l --format='%(contents:subject)' "$TAG")
+          body=$(git tag -l --format='%(contents:body)' "$TAG")
+          [ -n "$subject" ] || subject=$(git log -1 --format='%s' "$TAG")
+          [ -n "$body" ] || body=$(git log -1 --format='%b' "$TAG")
+          gh release create "$TAG" \
+            --title "$TAG — $subject" \
+            --notes "${body:-$subject}" \
+            --verify-tag
