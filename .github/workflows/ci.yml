@@ -31,7 +31,7 @@ jobs:
       - name: Set up Bun
         uses: Rethunk-Tech/gh-actions/setup-bun@346d9d280f6dfd86c9db02310039c90e2a6ddca4 # v1.31
         with:
-          node-version: "24"
+          node-version: "26"
           run-audit: "true"
 
       # `gate` is a Go program; the toolchain exists only to install it.
