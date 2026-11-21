@@ -6,10 +6,23 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-21
+
+### Added
+
+- `ShotDiff.failed`: the screens both folders have that `diffShots` could not compare, because a file is not a readable PNG.
+
 ### Fixed
 
-- `webkitWalk` writes a screenshot only when the driver's answer is PNG bytes within a size cap, so whatever answers on
-  the driver's port cannot choose what lands under a shot's name
+- `diffShots` keeps comparing when one screenshot is corrupt; the bad screen lands in `failed` instead of ending the run.
+- `webkitWalk` writes a screenshot only when the driver answers PNG bytes within a size cap, and only under a name that stays inside the shots folder, so whatever answers on the driver's port cannot choose what lands on disk.
+- `webkitWalk` matches accessible names literally, bounds its driver I/O, and fails the walk when the driver binary cannot start.
+- `webkitWalk` names the driver's status when it answers with something that is not an object, and skips layout checks after a step that missed its target.
+- `Meter` enables the Performance domain, scales `perTen` correctly, rejects a non-positive `watchedMs`, and ignores the `g` and `y` flags on regexes.
+- `hookScript` counts mutations when the script runs after the document loaded, and rejects a non-finite quiet time.
+- `unevenSpacing` skips elements whose painted walk hits the node cap, and invisible overlays no longer trip the layout checks (MUI library names are anchored too).
+- `render-diff` exits 2 when it is given a file instead of a folder.
+- `proc` skips non-numeric names under `/proc` when it walks a process tree.
 
 ## [0.2.0] - 2026-11-08
 
