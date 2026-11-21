@@ -23,6 +23,8 @@ export interface Step {
   name: string
   /** Searches only inside this container, for a name another control shares. */
   within?: string
+  /** Matches a label that starts with name, for a control whose label carries a count or the open item's name. */
+  prefix?: boolean
 }
 /** The screens in an order where each is reached from the one before by clicking, so the app loads once. `from` is what
  * leads back to a screen's starting point after a reload, when a step finds nothing to click. */
@@ -78,17 +80,24 @@ export function driverValue(method: string, path: string, status: number, body: 
   return json.value
 }
 
-/** Literal accessible-name match: trimmed label equals name. Empty names are rejected. */
-export function nameMatches(label: string, name: string): boolean {
+/** Literal accessible-name match: trimmed label equals name, or starts with it when prefix is set. Empty names are
+ * rejected. */
+export function nameMatches(label: string, name: string, prefix = false): boolean {
   if (name.trim() === '') {
     throw new Error('step name is empty')
   }
-  return label.trim() === name
+  return prefix ? label.trim().startsWith(name) : label.trim() === name
 }
 
 /** Whether `step` is already in `list` by role, name, and within. */
 export function hasStep(list: Step[], step: Step): boolean {
-  return list.some((s) => s.role === step.role && s.name === step.name && s.within === step.within)
+  return list.some(
+    (s) =>
+      s.role === step.role &&
+      s.name === step.name &&
+      s.within === step.within &&
+      !s.prefix === !step.prefix,
+  )
 }
 
 export async function call(
@@ -119,11 +128,11 @@ export async function call(
 
 // The page-side click: the first element of the role whose aria-label or text matches, waiting up to a few seconds.
 const CLICK = `
-  const [role, pattern, within, done] = arguments
+  const [role, pattern, within, prefix, done] = arguments
   const sel = { tab: '[role=tab]', button: 'button,[role=button]', menuitem: '[role=menuitem]' }[role]
   const start = Date.now()
   const tryClick = () => {
-    const el = [...(within ? document.querySelector(within) ?? document : document).querySelectorAll(sel)].find((e) => (e.getAttribute('aria-label') ?? e.textContent ?? '').trim() === pattern)
+    const el = [...(within ? document.querySelector(within) ?? document : document).querySelectorAll(sel)].find((e) => { const label = (e.getAttribute('aria-label') ?? e.textContent ?? '').trim(); return prefix ? label.startsWith(pattern) : label === pattern })
     if (el) { el.click(); done(true) } else if (Date.now() - start > 8000) { done(false) } else { setTimeout(tryClick, 200) }
   }
   tryClick()
@@ -156,7 +165,7 @@ const click = async ({ base, id }: Session, s: Step) => {
   }
   return Boolean(
     await call(base, 'POST', `/session/${id}/execute/async`, {
-      body: { script: CLICK, args: [s.role, s.name, s.within ?? ''] },
+      body: { script: CLICK, args: [s.role, s.name, s.within ?? '', Boolean(s.prefix)] },
     }),
   )
 }

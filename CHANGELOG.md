@@ -6,6 +6,12 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-21
+
+### Added
+
+- `Step.prefix` matches a label that starts with the step's name, for a control whose label carries a count or the open item's name, which 0.3.0's literal match could not reach.
+
 ## [0.3.0] - 2026-11-21
 
 ### Added
@@ -65,7 +71,9 @@ Notable changes to `react-render-audit`. The format follows
 - `webkitWalk`: the layout checks in WebKitGTK.
 - `muiPreset`: selectors and names for MUI apps.
 
-[Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Rethunk-Tech/react-render-audit/compare/v0.1.1...v0.1.2

@@ -21,6 +21,10 @@ test('nameMatches is literal', () => {
   expect(nameMatches('Items (3)', '(')).toBe(false)
   expect(() => nameMatches('x', '')).toThrow()
   expect(() => nameMatches('x', '  ')).toThrow()
+  expect(nameMatches('Mods3', 'Mods', true)).toBe(true)
+  expect(nameMatches('Switch game: Lethal Company', 'Switch game', true)).toBe(true)
+  expect(nameMatches('Mod', 'Mods', true)).toBe(false)
+  expect(nameMatches('Mods3', 'Mods')).toBe(false)
 })
 
 test('hasStep matches role, name, and within', () => {
