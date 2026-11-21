@@ -14,7 +14,7 @@ would upload.
 
 - Relative imports keep their `.ts` extension; `tsc -p tsconfig.json` rewrites it to `.js` on emit.
 - `package.json` `files` is `dist` and `src`: the declaration maps point at `../src`.
-- The only entry point is `src/index.ts`; a name not exported there is not API.
+- The entry points are `src/index.ts` and `src/proc.ts` (the `./proc` subpath); a name not exported by one of them is not API.
 - `src/page/` holds functions Playwright serializes into the page: they may not close over module
   scope, which is why they carry their own helpers and regexes.
 - `hookScript` is one template string evaluated in the page; every value it varies by is
@@ -32,6 +32,7 @@ would upload.
 | -------------------------------------------------------- | -------------------------------------- |
 | `src/index.ts`                                           | The public surface                     |
 | `src/hook.ts`                                            | The DevTools hook script               |
+| `src/proc.ts`                                            | `/proc` memory and CPU readers (`./proc`) |
 | `src/meter.ts`                                           | `Meter`, `Sample`, `perTen`            |
 | `src/preset.ts`                                          | `muiPreset`                            |
 | `src/diff.ts`, `src/cli.ts`                              | Screenshot folder diff and its command |
