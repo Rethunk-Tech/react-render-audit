@@ -1,16 +1,26 @@
 import { afterAll, afterEach, expect, test } from 'bun:test'
 import { comparePixels } from './pixels.ts'
 
-type Img = { width: number; height: number; data: ArrayLike<number | undefined> }
+interface Img {
+  width: number
+  height: number
+  data: ArrayLike<number | undefined>
+}
 
 const images = new Map<string, Img>()
 
-class FakeImage {
-  src = ''
-  width = 0
-  height = 0
-  data: ArrayLike<number | undefined> = []
-  async decode() {
+interface FakeImage extends Img {
+  src: string
+  decode(): Promise<void>
+}
+
+// A constructor function rather than a class: the file's one class is FakeCanvas.
+function FakeImage(this: FakeImage) {
+  this.src = ''
+  this.width = 0
+  this.height = 0
+  this.data = []
+  this.decode = async () => {
     const img = images.get(this.src)
     if (!img) {
       throw new Error(`missing ${this.src}`)
@@ -22,8 +32,8 @@ class FakeImage {
 }
 
 class FakeCanvas {
-  #w: number
-  #h: number
+  readonly #w: number
+  readonly #h: number
   #drawn: ArrayLike<number | undefined> = []
   #put: { data: Uint8ClampedArray } | null = null
   constructor(w: number, h: number) {

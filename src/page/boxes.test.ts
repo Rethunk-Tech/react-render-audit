@@ -14,7 +14,7 @@ afterEach(() => {
   globalThis.getComputedStyle = prevGetComputedStyle
 })
 
-type Style = {
+interface Style {
   borderTopLeftRadius: string
   backgroundColor: string
   getPropertyValue: (prop: string) => string
@@ -45,7 +45,7 @@ const boxedEdge = style({
 })
 const notBoxed = style()
 
-type Node = {
+interface Node {
   tagName: string
   classList: string[]
   parentElement: Node | null
