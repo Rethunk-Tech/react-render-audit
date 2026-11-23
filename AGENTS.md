@@ -21,20 +21,21 @@ would upload.
   `JSON.stringify`d into it, never concatenated raw.
 - The hook counts a component when React did work on it in a commit, so the counts hold for
   production builds.
-- Nothing reads an environment variable, and only the `render-diff` command (`src/cli.ts`) writes
+- Nothing reads an environment variable, and only the commands (`src/cli*.ts`) write
   to the console; callers pass options, and `Meter` and `webkitWalk` take a `log` callback.
 - `webkitWalk` has no automated test (it needs WebKitGTK and a display); keep its logic in the
   page-side scripts and the break shaping small.
 
 ## Files
 
-| File                                                     | Holds                                     |
-| -------------------------------------------------------- | ----------------------------------------- |
-| `src/index.ts`                                           | The public surface                        |
-| `src/hook.ts`                                            | The DevTools hook script                  |
-| `src/proc.ts`                                            | `/proc` memory and CPU readers (`./proc`) |
-| `src/meter.ts`                                           | `Meter`, `Sample`, `perTen`               |
-| `src/preset.ts`                                          | `muiPreset`                               |
-| `src/diff.ts`, `src/cli.ts`                              | Screenshot folder diff and its command    |
-| `src/walk.ts`                                            | WebKitGTK walk through WebKitWebDriver    |
-| `src/page/layout.ts`, `gaps.ts`, `boxes.ts`, `pixels.ts` | Page-side checks and pixel compare        |
+| File                                                     | Holds                                            |
+| -------------------------------------------------------- | ------------------------------------------------ |
+| `src/index.ts`                                           | The public surface                               |
+| `src/hook.ts`                                            | The DevTools hook script                         |
+| `src/proc.ts`                                            | `/proc` memory and CPU readers (`./proc`)        |
+| `src/meter.ts`                                           | `Meter`, `Sample`, `perTen`                      |
+| `src/preset.ts`                                          | `muiPreset`                                      |
+| `src/diff.ts`, `src/cli.ts`                              | Screenshot folder diff and its command           |
+| `src/shot.ts`, `src/shotdiff.ts`, `src/cli-shot*.ts`     | Headless render, mock compare and their commands |
+| `src/walk.ts`                                            | WebKitGTK walk through WebKitWebDriver           |
+| `src/page/layout.ts`, `gaps.ts`, `boxes.ts`, `pixels.ts` | Page-side checks and pixel compare               |

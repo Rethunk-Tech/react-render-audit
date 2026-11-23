@@ -6,6 +6,12 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-23
+
+### Added
+
+- `render-shot` and `render-shotdiff` commands, with `renderShots`, `compareShots`, `chromiumBin` and `ShotError` as library exports: render a page or file headless at given sizes, and compare a render to a design mock (percent differing after fuzz, largest regions, side-by-side crop). They need a Chromium binary and ImageMagick.
+
 ## [0.4.0] - 2026-11-21
 
 ### Added

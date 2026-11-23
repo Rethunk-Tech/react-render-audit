@@ -5,4 +5,14 @@ export { type BoxOptions, type NestedBox, nestedBoxes } from './page/boxes.ts'
 export { type GapOptions, type UnevenSpace, unevenSpacing } from './page/gaps.ts'
 export { collapsed, covered, type LayoutBreak, layoutBreaks, overflow } from './page/layout.ts'
 export { muiPreset } from './preset.ts'
+export {
+  chromiumBin,
+  parseSize,
+  renderShots,
+  ShotError,
+  type ShotOptions,
+  type ShotResult,
+  type Size,
+} from './shot.ts'
+export { compareShots, type ShotCompare, type ShotCompareOptions } from './shotdiff.ts'
 export { type Screen, type Step, type Walk, type WalkBreak, webkitWalk } from './walk.ts'
