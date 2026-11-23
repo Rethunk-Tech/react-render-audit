@@ -6,6 +6,12 @@ Notable changes to `react-render-audit`. The format follows
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-23
+
+### Fixed
+
+- `compareShots` and `render-shotdiff` report a missing ImageMagick as exit 2 with its message instead of crashing.
+
 ## [0.5.0] - 2026-11-23
 
 ### Added

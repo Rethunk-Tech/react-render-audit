@@ -74,7 +74,10 @@ const magickTools = (bin: string) => {
     const r = spawnSync(bin, args, { encoding: 'utf8' })
     const exitCode = r.status ?? 1
     if (!allow.includes(exitCode)) {
-      throw new ShotError(BAD_INPUT, r.stderr.trim() || `magick ${args[0] ?? 'convert'} failed`)
+      throw new ShotError(
+        BAD_INPUT,
+        (r.error?.message ?? r.stderr.trim()) || `magick ${args[0] ?? 'convert'} failed`,
+      )
     }
     return { stdout: r.stdout, stderr: r.stderr }
   }
@@ -83,7 +86,7 @@ const magickTools = (bin: string) => {
       throw new ShotError(BAD_INPUT, `missing file: ${p}`)
     }
     const r = spawnSync(bin, ['identify', '-format', '%w %h', p], { encoding: 'utf8' })
-    const [w, h] = r.stdout.trim().split(SPACES).map(Number)
+    const [w, h] = (r.stdout ?? '').trim().split(SPACES).map(Number)
     if (r.status !== 0 || !(w && h)) {
       throw new ShotError(BAD_INPUT, `not an image: ${p}`)
     }
